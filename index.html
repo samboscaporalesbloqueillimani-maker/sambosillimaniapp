@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sambos Caporales - Bloque Illimani</title>
+  <link rel="stylesheet" href="styles.css">
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+
+  <!-- Toast Notification Container -->
+  <div class="toast-container" id="toastContainer"></div>
+
+  <!-- Pantalla Inicial de Bienvenida con Animación Tricolor -->
+  <div class="welcome-overlay" id="welcomeOverlay">
+    <div class="welcome-emblem-container">
+      <img src="escudo.png" alt="Escudo Sambos Caporales Bloque Illimani" class="escudo-oficial">
+    </div>
+    
+    <div class="tricolor-bar"></div>
+    
+    <h1 class="welcome-title">Sambos Caporales</h1>
+    <p class="welcome-subtitle">Bloque Illimani • La Paz</p>
+
+    <button class="btn-fuerza" id="btnFuerza">
+      <i class="fa-solid fa-play"></i> ¡Fuerza, Fe y Devoción!
+    </button>
+  </div>
+
+  <!-- Contenedor Principal de Login -->
+  <div style="min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 2rem 1rem;">
+    <div class="card" style="max-width: 460px; width: 100%; text-align: center; border-color: rgba(255, 215, 0, 0.4);">
+      
+      <div style="margin-bottom: 1.5rem;">
+        <div style="margin-bottom: 1rem;">
+          <img src="escudo.png" alt="Escudo Sambos Caporales" class="escudo-oficial" style="max-width: 110px;">
+        </div>
+        <h2 style="font-family: var(--font-heading); font-size: 1.6rem; color: var(--color-white);">Acceso Fraternidad</h2>
+        <p style="color: var(--text-muted); font-size: 0.9rem;">Ingrese su número de Carnet de Identidad para ingresar</p>
+      </div>
+
+      <form id="loginForm">
+        <div class="form-group" style="text-align: left;">
+          <label class="form-label" for="loginCI"><i class="fa-solid fa-id-card"></i> Cédula de Identidad (CI)</label>
+          <input type="text" id="loginCI" class="form-control" placeholder="Ingrese su número de CI..." required>
+        </div>
+
+        <button type="submit" class="btn btn-gold" style="width: 100%; padding: 0.9rem; font-size: 1.1rem; margin-top: 0.5rem;">
+          <i class="fa-solid fa-right-to-bracket"></i> Ingresar al Sistema
+        </button>
+      </form>
+
+      <!-- Botón Secundario de Autoregistro para Nuevos Fraternos -->
+      <div style="margin-top: 1.2rem;">
+        <button type="button" class="btn btn-outline" id="btnOpenRegisterModal" style="width: 100%; border-color: var(--color-gold); color: var(--color-gold); font-weight: 700; padding: 0.8rem;">
+          <i class="fa-solid fa-user-plus"></i> ✨ Registrarse por primera vez / Nuevo Fraterno
+        </button>
+      </div>
+
+      <!-- Selector Rápido de Usuarios y Permisos de Prueba -->
+      <div style="margin-top: 1.8rem; padding-top: 1.2rem; border-top: 1px solid var(--border-glass);">
+        <p style="font-size: 0.85rem; color: var(--color-gold); font-weight: 700; margin-bottom: 0.8rem;">
+          <i class="fa-solid fa-user-lock"></i> Accesos Rápidos por Roles (Pruebas):
+        </p>
+        <div style="display: flex; flex-direction: column; gap: 0.6rem;">
+
+          <button type="button" class="btn btn-outline demo-login-btn" data-ci="1234567" data-role="admin" style="justify-content: flex-start; text-align: left;">
+            <i class="fa-solid fa-user-shield" style="color: var(--color-gold);"></i>
+            <div>
+              <div style="font-weight: 700; font-size: 0.9rem;">Carlos Llanes (Admin / Guía Central)</div>
+              <div style="font-size: 0.75rem; color: var(--text-muted);">CI: 1234567 • Panel Completo & Admisiones</div>
+            </div>
+          </button>
+
+          <button type="button" class="btn btn-outline demo-login-btn" data-ci="4567890" data-role="encargado_asistencia" style="justify-content: flex-start; text-align: left;">
+            <i class="fa-solid fa-qrcode" style="color: #3498DB;"></i>
+            <div>
+              <div style="font-weight: 700; font-size: 0.9rem;">Mateo Condori (Encargado de Asistencia)</div>
+              <div style="font-size: 0.75rem; color: var(--text-muted);">CI: 4567890 • Solo Escáner y Licencias</div>
+            </div>
+          </button>
+
+          <button type="button" class="btn btn-outline demo-login-btn" data-ci="9876543" data-role="encargado_pagos" style="justify-content: flex-start; text-align: left;">
+            <i class="fa-solid fa-receipt" style="color: #2ECC71;"></i>
+            <div>
+              <div style="font-weight: 700; font-size: 0.9rem;">Sofía Vargas (Encargada de Pagos)</div>
+              <div style="font-size: 0.75rem; color: var(--text-muted);">CI: 9876543 • Solo Arqueo y Comprobantes Base64</div>
+            </div>
+          </button>
+
+          <button type="button" class="btn btn-outline demo-login-btn" data-ci="7654321" data-role="danzante" style="justify-content: flex-start; text-align: left;">
+            <i class="fa-solid fa-user" style="color: #FF6B6B;"></i>
+            <div>
+              <div style="font-weight: 700; font-size: 0.9rem;">Elena Mendoza (Danzante / Fraterno)</div>
+              <div style="font-size: 0.75rem; color: var(--text-muted);">CI: 7654321 • Perfil Móvil (Sin acceso a Admin)</div>
+            </div>
+          </button>
+
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Modal Formulario de Inscripción Oficial Bloque Illimani (Con Carga de Foto Obligatoria) -->
+  <div class="modal-overlay" id="registerModal">
+    <div class="modal-card" style="max-width: 620px; text-align: left; max-height: 90vh; overflow-y: auto;">
+      <div style="text-align: center; margin-bottom: 1.2rem;">
+        <img src="escudo.png" alt="Escudo Sambos Caporales" class="escudo-oficial" style="max-width: 85px; margin-bottom: 0.5rem;">
+        <h2 style="color: var(--color-gold); font-family: var(--font-heading); font-size: 1.4rem;">
+          Formulario de Inscripción de Nuevos Fraternos
+        </h2>
+        <p style="color: var(--text-muted); font-size: 0.85rem;">Su registro ingresará en estado "Pendiente de Aprobación" hasta la evaluación del Administrador.</p>
+      </div>
+
+      <form id="formRegister">
+        <div class="grid-2">
+          <div class="form-group">
+            <label class="form-label" for="regNombre">Nombre Completo *</label>
+            <input type="text" id="regNombre" class="form-control" placeholder="Ej: Carlos Fernando Pérez" required>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="regCI">Carnet de Identidad (CI) *</label>
+            <input type="text" id="regCI" class="form-control" placeholder="Ej: 8473921 LP" required>
+          </div>
+        </div>
+
+        <div class="grid-2">
+          <div class="form-group">
+            <label class="form-label" for="regFechaNacimiento">Fecha de Nacimiento *</label>
+            <input type="text" id="regFechaNacimiento" class="form-control" placeholder="Ej: 20/05/2001" required>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="regTelefono">Número de Celular / WhatsApp *</label>
+            <input type="tel" id="regTelefono" class="form-control" placeholder="Ej: 71234567" required>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="regDireccion">Dirección de Domicilio *</label>
+          <input type="text" id="regDireccion" class="form-control" placeholder="Ej: Av. Illimani #500, La Paz" required>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="regContactoEmergencia">Contacto de Emergencia (Nombre y Teléfono) *</label>
+          <input type="text" id="regContactoEmergencia" class="form-control" placeholder="Ej: Madre: Ana Pérez - 77654321" required>
+        </div>
+
+        <div class="grid-2">
+          <div class="form-group">
+            <label class="form-label" for="regBloque">Bloque de Baile *</label>
+            <select id="regBloque" class="form-control" required>
+              <option value="">-- Seleccionar Bloque --</option>
+              <option value="Cholitas">Cholitas (Figura)</option>
+              <option value="Varones">Varones (Tropa)</option>
+              <option value="Miskys">Miskys</option>
+              <option value="Jachas">Jachas</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="regAnioIngreso">Año de Ingreso *</label>
+            <input type="number" id="regAnioIngreso" class="form-control" min="1990" max="2026" value="2026" required>
+            <span style="font-size: 0.75rem; color: var(--color-gold); display: block; margin-top: 0.2rem;" id="regCategoriaPreview">
+              Categoría evaluada: <strong>Nuevo</strong>
+            </span>
+          </div>
+        </div>
+
+        <!-- Fotografía Obligatoria del Postulante en Base64 -->
+        <div class="form-group" style="background: rgba(255,255,255,0.03); border: 1px dashed var(--color-gold); border-radius: 12px; padding: 1rem; text-align: center;">
+          <label class="form-label" style="color: var(--color-gold); font-weight: 700;">
+            <i class="fa-solid fa-camera"></i> Fotografía Obligatoria del Fraterno (Base64) *
+          </label>
+          <div class="upload-preview-box" id="upload-preview-avatar" style="margin-bottom: 0.8rem;">
+            <i class="fa-solid fa-user-astronaut" style="font-size: 3rem; color: #3a4759;"></i>
+          </div>
+          <input type="file" id="regFotoFile" class="form-control" accept="image/*" style="display: none;" onchange="previsualizarFotoRegistro(this)">
+          <button type="button" class="btn btn-secondary" onclick="document.getElementById('regFotoFile').click()">
+            <i class="fa-solid fa-image"></i> Seleccionar Imagen de Perfil
+          </button>
+        </div>
+
+        <!-- Tallas de Indumentaria -->
+        <label class="form-label" style="color: var(--color-gold); margin-top: 0.5rem; display: block;">
+          <i class="fa-solid fa-shirt"></i> Tallas Oficiales de Indumentaria *
+        </label>
+        <div class="grid-3">
+          <div class="form-group">
+            <label class="form-label" for="regTallaPolera">Talla Polera</label>
+            <select id="regTallaPolera" class="form-control" required>
+              <option value="S">S</option>
+              <option value="M" selected>M</option>
+              <option value="L">L</option>
+              <option value="XL">XL</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="regTallaChamarra">Talla Chamarra</label>
+            <select id="regTallaChamarra" class="form-control" required>
+              <option value="S">S</option>
+              <option value="M" selected>M</option>
+              <option value="L">L</option>
+              <option value="XL">XL</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="regTallaCanguro">Talla Canguro</label>
+            <select id="regTallaCanguro" class="form-control" required>
+              <option value="S">S</option>
+              <option value="M" selected>M</option>
+              <option value="L">L</option>
+              <option value="XL">XL</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Ficha Médica Obligatoria -->
+        <div class="form-group">
+          <label class="form-label" for="regFichaMedica" style="color: #FF6B6B;">
+            <i class="fa-solid fa-notes-medical"></i> Ficha Médica Obligatoria (Alergias, Medicación, etc.) *
+          </label>
+          <textarea id="regFichaMedica" class="form-control" rows="2" placeholder="Declare si padece asma, alergias, o lesiones física..." required></textarea>
+          
+          <div style="margin-top: 0.4rem; display: flex; align-items: center; gap: 0.5rem;">
+            <input type="checkbox" id="chkNoCondition" style="cursor: pointer;">
+            <label for="chkNoCondition" style="font-size: 0.85rem; color: var(--text-muted); cursor: pointer;">
+              No tengo ninguna condición médica relevante (Rellenar 'Ninguna')
+            </label>
+          </div>
+        </div>
+
+        <div style="display: flex; gap: 0.8rem; margin-top: 1.2rem;">
+          <button type="submit" class="btn btn-gold" style="flex: 2; padding: 0.8rem;">
+            <i class="fa-solid fa-paper-plane"></i> Enviar Inscripción a Revisión
+          </button>
+          <button type="button" class="btn btn-outline" onclick="closeRegisterModal()" style="flex: 1;">
+            Cancelar
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>

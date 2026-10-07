@@ -1,0 +1,728 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin - Sambos Caporales Bloque Illimani</title>
+  <link rel="stylesheet" href="styles.css">
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <!-- HTML5 QR Code Library -->
+  <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+
+  <!-- Toast Notification Container -->
+  <div class="toast-container" id="toastContainer"></div>
+
+  <!-- Header / Navigation -->
+  <header class="app-header">
+    <a href="#" class="header-brand">
+      <div class="brand-icon">
+        <img src="escudo.png" alt="Escudo Sambos Caporales" class="escudo-oficial" style="width: 40px; height: 40px; max-width: 40px;">
+      </div>
+      <div class="brand-text">
+        <h1>Bloque Illimani</h1>
+        <span id="adminRoleBadge">Panel Administrador & Personal</span>
+      </div>
+    </a>
+
+    <div class="header-user">
+      <a href="mi-perfil.html" class="btn btn-outline" style="padding: 0.4rem 0.8rem; font-size: 0.85rem; border-color: var(--color-gold); color: var(--color-gold); text-decoration: none; margin-right: 0.5rem;" title="Ver Ficha de Perfil / Kardex Individual">
+        <i class="fa-solid fa-id-badge"></i> Mi Perfil
+      </a>
+      <div class="user-badge">
+        <i class="fa-solid fa-user-shield" id="roleIcon"></i>
+        <span id="adminUserName">Carlos Llanes</span>
+      </div>
+      <button class="btn btn-outline" id="btnLogout" style="padding: 0.4rem 0.8rem; font-size: 0.85rem;">
+        <i class="fa-solid fa-right-from-bracket"></i> Salir
+      </button>
+    </div>
+  </header>
+
+  <!-- Barra de Navegación Navegable por Pestañas Dedicadas para Cada Módulo -->
+  <nav class="nav-tabs" id="adminNavTabs">
+    <button class="tab-btn active" data-tab="tabCronograma" id="navTabCronograma">
+      <i class="fa-solid fa-calendar-days"></i> 📅 Cronograma & Ensayos
+    </button>
+    <button class="tab-btn" data-tab="tabEscaner" id="navTabEscaner">
+      <i class="fa-solid fa-qrcode"></i> 📷 Escáner QR & Marcado
+    </button>
+    <button class="tab-btn" data-tab="tabAdmisiones" id="navTabAdmisiones">
+      <i class="fa-solid fa-user-shield"></i> 📋 Solicitudes Admisión <span class="badge badge-danger" id="navBadgePendientes" style="font-size:0.7rem; margin-left:0.2rem;">0</span>
+    </button>
+    <button class="tab-btn" data-tab="tabFraternos" id="navTabFraternos">
+      <i class="fa-solid fa-users"></i> 👥 Registro de Fraternos
+    </button>
+    <button class="tab-btn" data-tab="tabLicencias" id="navTabLicencias">
+      <i class="fa-solid fa-file-signature"></i> 🏥 Licencias Médicas
+    </button>
+    <button class="tab-btn" data-tab="tabTesoreria" id="navTabTesoreria">
+      <i class="fa-solid fa-vault"></i> 💰 Tesorería & Caja
+    </button>
+    <button class="tab-btn" data-tab="tabPersonal" id="navTabPersonal">
+      <i class="fa-solid fa-user-gear"></i> ⚙️ Configuración Personal
+    </button>
+    <button class="tab-btn" data-tab="tabExportaciones" id="navTabExportaciones">
+      <i class="fa-solid fa-boxes-packing"></i> 📥 Reportes & Excel
+    </button>
+  </nav>
+
+  <!-- Contenido Principal Panel Admin con Pestañas Independientes -->
+  <main class="container">
+    
+    <!-- PESTAÑA 1: CRONOGRAMA DE ENSAYOS GENERALES Y REGISTRO PERMANENTE -->
+    <div class="tab-content active" id="tabCronograma">
+      <div class="card" id="secEnsayoCronograma" style="border-left: 5px solid var(--color-gold); margin-bottom: 1.5rem;">
+        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+          <div>
+            <h3 style="color: var(--color-gold); font-size: 1.25rem; font-weight: 700; margin-bottom: 0.3rem;">
+              <i class="fa-solid fa-calendar-days"></i> Programación de Ensayos Generales y Habilitación de Marcado QR
+            </h3>
+            <p style="font-size: 0.85rem; color: var(--text-muted); margin: 0;">
+              Programe múltiples días de ensayo que permanecerán registrados. Habilite el marcado de Ingreso o Salida para tomar asistencia por escáner QR.
+            </p>
+          </div>
+          <div style="display: flex; gap: 0.8rem; align-items: center; flex-wrap: wrap;">
+            <button class="btn btn-outline" id="btnOpenModalEnsayo" style="border-color: var(--color-gold); color: var(--color-gold); font-weight: 700;">
+              <i class="fa-solid fa-calendar-plus"></i> ➕ Programar Día de Ensayo
+            </button>
+            <button class="btn btn-gold" id="btnExportEnsayoDia">
+              <i class="fa-solid fa-file-csv"></i> 📥 Exportar Reporte del Día Seleccionado
+            </button>
+          </div>
+        </div>
+
+        <!-- Selector de Ensayo Activo & Controles Rápidos -->
+        <div style="margin-top: 1rem; background: rgba(255,255,255,0.03); padding: 1rem; border-radius: 12px; border: 1px solid var(--border-glass); display: flex; align-items: center; gap: 1rem; flex-wrap: wrap;">
+          <div style="flex: 1; min-width: 280px;">
+            <label for="selectEnsayoActivo" style="font-weight: 700; color: var(--color-gold); display: block; margin-bottom: 0.3rem;">
+              <i class="fa-solid fa-calendar-check"></i> Seleccionar Día de Ensayo Activo:
+            </label>
+            <select id="selectEnsayoActivo" class="form-control" style="background: var(--bg-card); color: var(--color-white); font-weight: 700;">
+              <!-- Opciones inyectadas dinámicamente -->
+            </select>
+          </div>
+
+          <div style="display: flex; gap: 0.6rem; flex-wrap: wrap; align-items: flex-end; margin-top: 1.2rem;">
+            <button class="btn btn-gold" id="btnEnableIngreso" style="background: linear-gradient(135deg, #198754 0%, #2ECC71 100%); color: #FFF; border: none; font-weight: 700;">
+              <i class="fa-solid fa-right-to-bracket"></i> 🔓 Habilitar Marcado de INGRESO (QR)
+            </button>
+            <button class="btn btn-gold" id="btnEnableSalida" style="background: linear-gradient(135deg, #0D6EFD 0%, #0B5ED7 100%); color: #FFF; border: none; font-weight: 700;">
+              <i class="fa-solid fa-right-from-bracket"></i> 🏁 Habilitar Marcado de SALIDA (QR)
+            </button>
+          </div>
+        </div>
+
+        <!-- Tabla Resumen de Ensayos Generales Programados Permanentes -->
+        <div style="margin-top: 1.2rem;">
+          <h4 style="font-size: 0.95rem; color: var(--color-white); margin-bottom: 0.6rem; font-weight: 700;">
+            <i class="fa-solid fa-list-ul"></i> Registro Permanente de Días de Ensayo Programados:
+          </h4>
+          <div class="table-container">
+            <table class="table">
+              <thead>
+                <tr>
+                  <th>Fecha Ensayo</th>
+                  <th>Lugar / Descripción</th>
+                  <th>Hora Inicio</th>
+                  <th>Estado de Marcado</th>
+                  <th>Acciones Directas</th>
+                </tr>
+              </thead>
+              <tbody id="tablaEnsayosProgramadosBody">
+                <!-- Cargado dinámicamente por app.js -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PESTAÑA 2: ESCÁNER QR Y TOMA DE ASISTENCIA -->
+    <div class="tab-content" id="tabEscaner">
+      <!-- Banner de Horario de Ensayo -->
+      <div class="card" id="secAttendanceBanner" style="border-left: 5px solid var(--color-gold); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; margin-bottom: 1.5rem;">
+        <div>
+          <h3 style="color: var(--color-gold); font-size: 1.1rem; font-weight: 700;">
+            <i class="fa-solid fa-clock"></i> Escáner y Control de Marcado Oficial
+          </h3>
+          <p style="font-size: 0.9rem; color: var(--text-muted);" id="infoEnsayoSelectedDetails">
+            Horario Inicio: <strong>10:30 AM</strong> | Tolerancia: <strong>10 Min (hasta 10:40 AM)</strong> | Multa Atraso: <strong>Bs 30</strong> | Falta: <strong>Bs 50</strong>
+          </p>
+        </div>
+        <div style="display: flex; gap: 0.8rem; align-items: center; flex-wrap: wrap;">
+          <div style="text-align: right;">
+            <div style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase;">Hora Simulación / Actual</div>
+            <div id="simulatedClock" style="font-family: monospace; font-size: 1.3rem; font-weight: 800; color: var(--color-white);">10:35:00 AM</div>
+          </div>
+          <button class="btn btn-gold" id="btnToggleSimTime" title="Cambiar Simulación de Hora (10:35 AM vs 10:45 AM)">
+            <i class="fa-solid fa-forward-step"></i> Simular Atraso (10:45 AM)
+          </button>
+          <button class="btn btn-danger" id="btnConcluirEnsayo">
+            <i class="fa-solid fa-flag-checkered"></i> Concluir Ensayo
+          </button>
+        </div>
+      </div>
+
+      <!-- Tarjeta Escáner QR -->
+      <div class="card" id="secAttendanceScanner">
+        <div class="card-title" style="justify-content: space-between; flex-wrap: wrap;">
+          <span><i class="fa-solid fa-qrcode"></i> Escáner QR Doble Marca (Entrada / Salida)</span>
+          <span class="badge badge-gold" id="badgeScanModeActive" style="font-size: 0.85rem; padding: 0.4rem 0.8rem;">
+            🟢 MARCADOS DE INGRESO HABILITADOS
+          </span>
+        </div>
+
+        <div class="scan-mode-toggle">
+          <button class="scan-mode-btn active entrada" id="btnModeEntrada">
+            <i class="fa-solid fa-right-to-bracket"></i> 🔓 HABILITAR INGRESO (ENTRADA)
+          </button>
+          <button class="scan-mode-btn salida" id="btnModeSalida">
+            <i class="fa-solid fa-right-from-bracket"></i> 🏁 HABILITAR SALIDA (SALIDA)
+          </button>
+        </div>
+
+        <div class="qr-scanner-box">
+          <div id="reader"></div>
+          <p style="font-size: 0.8rem; color: var(--text-muted); margin-top: 0.5rem;" id="scannerStatusText">
+            <i class="fa-solid fa-camera"></i> Cámara activada para lectura de QR...
+          </p>
+        </div>
+
+        <div style="margin-top: 1.2rem;">
+          <label class="form-label" style="color: var(--color-gold);">
+            <i class="fa-solid fa-bolt"></i> Simular Escaneo Rápido de QR:
+          </label>
+          <div class="quick-scan-pills" id="quickScanPillsContainer"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PESTAÑA 3: SOLICITUDES DE ADMISIÓN -->
+    <div class="tab-content" id="tabAdmisiones">
+      <div class="card" id="secAdmisiones" style="border: 2px solid var(--color-gold); margin-bottom: 1.5rem;">
+        <div class="card-title" style="color: var(--color-gold); justify-content: space-between;">
+          <span><i class="fa-solid fa-user-shield"></i> Control de Admisiones: Solicitudes de Ingreso por Aprobar</span>
+          <span class="badge badge-danger" id="badge-pendientes-count">0 Pendientes</span>
+        </div>
+        <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1.2rem;">
+          Revise la documentación y la foto en Base64 de los postulantes antes de permitir su ingreso oficial al Bloque.
+        </p>
+
+        <div class="table-container">
+          <table class="table">
+            <thead>
+              <tr>
+                <th>Foto Perfil</th>
+                <th>Postulante</th>
+                <th>C.I.</th>
+                <th>Fila / Bloque</th>
+                <th>Contacto</th>
+                <th>Decisión Administrativa</th>
+              </tr>
+            </thead>
+            <tbody id="tabla-admisiones-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- PESTAÑA 4: REGISTRO GENERAL DE FRATERNOS -->
+    <div class="tab-content" id="tabFraternos">
+      <!-- Stats Grid -->
+      <div class="grid-4" style="margin-bottom: 1.5rem;">
+        <div class="stat-card blue" id="statCardTotal">
+          <div class="stat-icon"><i class="fa-solid fa-users"></i></div>
+          <div class="stat-info">
+            <div class="stat-value" id="statTotalFraternos">0</div>
+            <div class="stat-label">Total Fraternos</div>
+          </div>
+        </div>
+
+        <div class="stat-card green" id="statCardPresentes">
+          <div class="stat-icon" style="color: #2ECC71;"><i class="fa-solid fa-clipboard-user"></i></div>
+          <div class="stat-info">
+            <div class="stat-value" id="statPresentes">0</div>
+            <div class="stat-label">Asistencia Hoy</div>
+          </div>
+        </div>
+
+        <div class="stat-card red" id="secStatMultas">
+          <div class="stat-icon" style="color: var(--color-secondary);"><i class="fa-solid fa-triangle-exclamation"></i></div>
+          <div class="stat-info">
+            <div class="stat-value" id="statMultasBob">Bs 0</div>
+            <div class="stat-label">Multas Generadas</div>
+          </div>
+        </div>
+
+        <div class="stat-card red" id="statCardAlertas">
+          <div class="stat-icon" style="color: #FF6B6B;"><i class="fa-solid fa-heart-pulse"></i></div>
+          <div class="stat-info">
+            <div class="stat-value" id="statAlertasMedicas">0</div>
+            <div class="stat-label">Alertas Médicas</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tabla General de Registro de Asistencia -->
+      <div class="card" id="secAttendanceTableCard">
+        <div class="card-title" style="justify-content: space-between;">
+          <span><i class="fa-solid fa-list-check"></i> Registro General de Fraternos</span>
+          <span style="font-size: 0.85rem; color: var(--color-gold); font-weight: 400;" id="tableSubheadCount">4 Fraternos</span>
+        </div>
+
+        <div class="table-responsive">
+          <table class="table" id="attendanceTable">
+            <thead>
+              <tr>
+                <th>Fraterno / CI</th>
+                <th>Bloque / Categoría</th>
+                <th>Rol / Permiso</th>
+                <th>Hora Entrada</th>
+                <th>Hora Salida</th>
+                <th>Estado Asistencia</th>
+                <th>Ficha Médica</th>
+                <th>Multas / Saldo (BOB)</th>
+                <th>Acciones</th>
+              </tr>
+            </thead>
+            <tbody id="attendanceTableBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- PESTAÑA 5: LICENCIAS MÉDICAS -->
+    <div class="tab-content" id="tabLicencias">
+      <div class="card" id="secLicenses">
+        <div class="card-title">
+          <i class="fa-solid fa-file-signature"></i> Módulo de Licencias Justificadas
+        </div>
+
+        <form id="formLicencia">
+          <div class="form-group">
+            <label class="form-label" for="selectFraternoLicencia">Seleccionar Fraterno</label>
+            <select class="form-control" id="selectFraternoLicencia" required></select>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="motivoLicencia">Motivo de la Licencia</label>
+            <textarea class="form-control" id="motivoLicencia" rows="2" placeholder="Ej: Salud, viaje..." required></textarea>
+          </div>
+
+          <button type="submit" class="btn btn-primary" style="width: 100%;">
+            <i class="fa-solid fa-check-double"></i> Otorgar Licencia Justificada (Anula Multa a Bs 0)
+          </button>
+        </form>
+      </div>
+    </div>
+
+    <!-- PESTAÑA 6: TESORERÍA Y CAJA CHICA -->
+    <div class="tab-content" id="tabTesoreria">
+      <!-- Tarjetas de Resumen Financiero por Cuentas Separadas -->
+      <div class="grid-3" id="secStatCajaChica" style="margin-bottom: 1.5rem;">
+        <div class="stat-card green">
+          <div class="stat-icon" style="color: #2ECC71;"><i class="fa-solid fa-vault"></i></div>
+          <div class="stat-info">
+            <div class="stat-value" id="statCajaRecaudada">Bs 0</div>
+            <div class="stat-label">Caja Chica Total Recaudada</div>
+          </div>
+        </div>
+
+        <div class="stat-card gold">
+          <div class="stat-icon" style="color: var(--color-gold);"><i class="fa-solid fa-gavel"></i></div>
+          <div class="stat-info">
+            <div class="stat-value" id="statRecaudadoMultas">Bs 0</div>
+            <div class="stat-label">Recaudación Multas Asistencia</div>
+          </div>
+        </div>
+
+        <div class="stat-card blue">
+          <div class="stat-icon" style="color: #3498DB;"><i class="fa-solid fa-file-invoice-dollar"></i></div>
+          <div class="stat-info">
+            <div class="stat-value" id="statRecaudadoCuotas">Bs 0</div>
+            <div class="stat-label">Recaudación Cuotas Programadas</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Barra de Acciones Principales de Tesorería -->
+      <div class="card" style="margin-bottom: 1.5rem; background: rgba(255,255,255,0.03); border: 1px solid var(--color-gold);">
+        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+          <div>
+            <h3 style="color: var(--color-gold); font-size: 1.15rem; font-weight: 700; margin-bottom: 0.2rem;">
+              <i class="fa-solid fa-calculator"></i> Módulo de Gestión Financiera y Cobros de Tesorería
+            </h3>
+            <p style="font-size: 0.85rem; color: var(--text-muted); margin: 0;">
+              Programación de cuotas, cobro manual con fecha/monto y separación contable entre Multas y Cuotas.
+            </p>
+          </div>
+          <div style="display: flex; gap: 0.8rem; flex-wrap: wrap;">
+            <button class="btn btn-gold" id="btnOpenModalCrearCuota" style="font-weight: 700;">
+              <i class="fa-solid fa-calendar-plus"></i> ➕ Programar Cuota Financiera
+            </button>
+            <button class="btn btn-gold" id="btnOpenModalPagoManual" style="background: linear-gradient(135deg, #0D6EFD 0%, #0B5ED7 100%); color: #FFF; border: none; font-weight: 700;">
+              <i class="fa-solid fa-hand-holding-dollar"></i> 💵 Registrar Pago Manual
+            </button>
+            <button class="btn" id="btnExportIngresos" style="background: linear-gradient(135deg, #0F5132 0%, #198754 100%); color: #FFFFFF; font-weight: 700; border: 1px solid rgba(25, 135, 84, 0.4); font-size: 0.85rem;">
+              <i class="fa-solid fa-file-csv"></i> 📊 Exportar Ingresos (Excel)
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- SECCIÓN A: PROGRAMACIÓN Y CRONOGRAMA DE CUOTAS FINANCIERAS -->
+      <div class="card" style="margin-bottom: 1.5rem;">
+        <div class="card-title" style="color: var(--color-gold);">
+          <i class="fa-solid fa-calendar-days"></i> 📅 Cronograma Oficial de Cuotas Financieras Programadas
+        </div>
+        <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1rem;">
+          Estas cuotas son visibles para todos los fraternos en su perfil móvil con la fecha límite de pago y monto en Bs.
+        </p>
+
+        <div class="table-container">
+          <table class="table">
+            <thead>
+              <tr>
+                <th>Nombre de la Cuota</th>
+                <th>Fecha Límite de Pago</th>
+                <th>Monto Fijo (Bs)</th>
+                <th>Fraternos al Día</th>
+                <th>Acciones Directas</th>
+              </tr>
+            </thead>
+            <tbody id="tablaCuotasProgramadasBody">
+              <!-- Inyectado dinámicamente -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- REGISTRO 1: CONTROL Y HISTORIAL DE MULTAS POR ASISTENCIA -->
+      <div class="card" style="margin-bottom: 1.5rem; border-left: 5px solid var(--color-secondary);">
+        <div class="card-title" style="color: #FF6B6B;">
+          <i class="fa-solid fa-gavel"></i> REGISTRO 1: Multas por Asistencia (Faltas, Atrasos, Sin Marcado)
+        </div>
+        <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1rem;">
+          Control independiente de sanciones económicas aplicadas por inasistencia o atrasos.
+        </p>
+
+        <div class="table-container">
+          <table class="table">
+            <thead>
+              <tr>
+                <th>Fraterno (CI)</th>
+                <th>Bloque</th>
+                <th>Multas Generadas</th>
+                <th>Multas Pagadas</th>
+                <th>Saldo Pendiente Multas</th>
+                <th>Acción de Cobro</th>
+              </tr>
+            </thead>
+            <tbody id="tablaRegistroMultasBody">
+              <!-- Inyectado dinámicamente -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- REGISTRO 2: CONTROL Y HISTORIAL DE CUOTAS PROGRAMADAS -->
+      <div class="card" style="margin-bottom: 1.5rem; border-left: 5px solid #0D6EFD;">
+        <div class="card-title" style="color: #3498DB;">
+          <i class="fa-solid fa-file-invoice-dollar"></i> REGISTRO 2: Pagos de Cuotas Financieras Programadas
+        </div>
+        <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1rem;">
+          Control contable separado de cuotas de ingreso, mensualidades y cuotas de trajes de baile.
+        </p>
+
+        <div class="table-container">
+          <table class="table">
+            <thead>
+              <tr>
+                <th>Fraterno (CI)</th>
+                <th>Bloque</th>
+                <th>Cuotas Programadas</th>
+                <th>Cuotas Canceladas</th>
+                <th>Total Abonado Cuotas</th>
+                <th>Acción de Cobro</th>
+              </tr>
+            </thead>
+            <tbody id="tablaRegistroCuotasBody">
+              <!-- Inyectado dinámicamente -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- BANDEJA DE VALIDACIÓN DE COMPROBANTES DE PAGO BASE64 -->
+      <div class="card" id="secReceiptsInbox">
+        <div class="card-title">
+          <span><i class="fa-solid fa-receipt"></i> Validación de Comprobantes de Pago Subidos por Fraternos (Base64)</span>
+        </div>
+        <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1rem;">
+          Comprobantes enviados por danzantes pendientes de validación para acreditar a su cuenta.
+        </p>
+
+        <div id="receiptsInboxContainer"></div>
+      </div>
+
+    </div>
+
+    <!-- PESTAÑA 7: CONFIGURACIÓN DE PERSONAL -->
+    <div class="tab-content" id="tabPersonal">
+      <div class="card" id="secStaffConfig" style="border: 1px solid var(--color-gold);">
+        <div class="card-title" style="color: var(--color-gold);">
+          <i class="fa-solid fa-user-gear"></i> Configuración de Personal y Asignación de Permisos
+        </div>
+        <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1.2rem;">
+          Asigne funciones y restricciones específicas de acceso (Encargado de Asistencia / Encargado de Pagos / Admin).
+        </p>
+
+        <form id="formStaffRole" style="display: flex; gap: 1rem; align-items: flex-end; flex-wrap: wrap;">
+          <div class="form-group" style="flex: 1; min-width: 240px; margin-bottom: 0;">
+            <label class="form-label" for="selectStaffFraterno">Seleccionar Fraterno (CI)</label>
+            <select id="selectStaffFraterno" class="form-control" required></select>
+          </div>
+
+          <div class="form-group" style="flex: 1; min-width: 240px; margin-bottom: 0;">
+            <label class="form-label" for="selectStaffRole">Rol de Personal / Permiso</label>
+            <select id="selectStaffRole" class="form-control" required>
+              <option value="danzante">Danzante / Fraterno (Sin acceso admin)</option>
+              <option value="encargado_asistencia">Encargado de Asistencia (Solo Cámara y Licencias)</option>
+              <option value="encargado_pagos">Encargado de Pagos (Solo Arqueo y Comprobantes)</option>
+              <option value="admin">Admin / Guía Central (Acceso Total)</option>
+            </select>
+          </div>
+
+          <button type="submit" class="btn btn-gold" style="padding: 0.8rem 1.5rem;">
+            <i class="fa-solid fa-floppy-disk"></i> Guardar Permiso de Personal
+          </button>
+        </form>
+      </div>
+    </div>
+
+    <!-- PESTAÑA 8: REPORTES Y EXPORTACIONES EXCEL/CSV -->
+    <div class="tab-content" id="tabExportaciones">
+      <div class="card" id="secExports" style="margin-bottom: 1.5rem;">
+        <div class="card-title">
+          <i class="fa-solid fa-boxes-packing"></i> Reportes y Logística General
+        </div>
+        <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0.8rem;">
+          Exportación de planillas en formato CSV (delimitado por ;) para control de asistencia e indumentaria.
+        </p>
+
+        <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
+          <button class="btn" id="btnExportTallas" style="background: linear-gradient(135deg, #1B4D3E 0%, #2ECC71 100%); color: #FFFFFF; font-weight: 700; border: 1px solid rgba(46, 204, 113, 0.4);">
+            <i class="fa-solid fa-shirt"></i> 📥 Exportar Tallas y Bloques a Excel
+          </button>
+
+          <button class="btn btn-gold" id="btnExportCSV">
+            <i class="fa-solid fa-file-excel"></i> Exportar Asistencia General a Excel
+          </button>
+        </div>
+      </div>
+
+      <!-- Gráficos de Puntualidad por Bloques -->
+      <div class="card" id="secChartContainer">
+        <div class="card-title">
+          <i class="fa-solid fa-chart-column"></i> Reporte de Puntualidad por Bloques
+        </div>
+        <div style="height: 280px; position: relative;">
+          <canvas id="punctualityChart"></canvas>
+        </div>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- Modal de Alerta Médica Emergente -->
+  <div class="modal-overlay" id="medicalAlertModal">
+    <div class="modal-card">
+      <div class="medical-alert-icon">
+        <i class="fa-solid fa-kit-medical"></i>
+      </div>
+      <h2 style="color: var(--color-secondary); font-family: var(--font-heading); font-size: 1.5rem; margin-bottom: 0.5rem;">
+        ¡ALERTA MÉDICA DETECTADA!
+      </h2>
+      <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 1.2rem;">
+        El fraterno requiere atención especial durante el ensayo físico.
+      </p>
+
+      <div style="background: rgba(255,255,255,0.05); border: 1px dashed var(--color-secondary); border-radius: 12px; padding: 1rem; text-align: left; margin-bottom: 1.5rem;">
+        <div style="font-weight: 800; font-size: 1.2rem; color: var(--color-white);" id="modalFraternoName">Nombre Fraterno</div>
+        <div style="font-size: 0.85rem; color: var(--color-gold);" id="modalFraternoRole">Bloque • CI</div>
+        <hr style="border-color: var(--border-glass); margin: 0.8rem 0;">
+        <div style="font-weight: 700; color: #FF6B6B; font-size: 0.95rem; margin-bottom: 0.4rem;">
+          <i class="fa-solid fa-hand-holding-medical"></i> Condición Médica:
+        </div>
+        <div style="font-size: 0.95rem; color: var(--color-white); font-weight: 600;" id="modalMedicalNotes">Observaciones médicas</div>
+        <hr style="border-color: var(--border-glass); margin: 0.8rem 0;">
+        <div style="font-weight: 700; color: var(--color-gold); font-size: 0.9rem; margin-bottom: 0.4rem;">
+          <i class="fa-solid fa-phone"></i> Contacto de Emergencia:
+        </div>
+        <div style="font-size: 0.95rem; color: var(--color-white);" id="modalEmergencyContact">Nombre - Teléfono</div>
+      </div>
+
+      <div style="display: flex; gap: 0.8rem;">
+        <a id="modalCallEmergencyBtn" href="#" class="btn btn-gold" style="flex: 1;">
+          <i class="fa-solid fa-phone"></i> Llamar Emergencia
+        </a>
+        <button class="btn btn-outline" onclick="closeMedicalModal()" style="flex: 1;">
+          Entendido / Cerrar
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal para Programar Día de Ensayo General -->
+  <div class="modal-overlay" id="modalCrearEnsayo">
+    <div class="modal-card" style="max-width: 480px; text-align: left;">
+      <h3 style="color: var(--color-gold); font-family: var(--font-heading); font-size: 1.3rem; margin-bottom: 0.5rem; text-align: center;">
+        <i class="fa-solid fa-calendar-plus"></i> Programar Nuevo Día de Ensayo General
+      </h3>
+      <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1.2rem; text-align: center;">
+        Complete los datos para habilitar la toma de asistencia por escáner QR.
+      </p>
+
+      <form id="formCrearEnsayo">
+        <div class="form-group">
+          <label class="form-label" for="newEnsayoFecha">Fecha del Ensayo General *</label>
+          <input type="date" id="newEnsayoFecha" class="form-control" required style="background: var(--bg-card); color: var(--color-white);">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="newEnsayoDesc">Lugar / Descripción del Ensayo *</label>
+          <input type="text" id="newEnsayoDesc" class="form-control" placeholder="Ej: Ensayo General - Plaza Villarroel" required>
+        </div>
+
+        <div class="grid-2">
+          <div class="form-group">
+            <label class="form-label" for="newEnsayoHoraInicio">Hora Oficial Inicio *</label>
+            <input type="time" id="newEnsayoHoraInicio" class="form-control" value="10:30" required style="background: var(--bg-card); color: var(--color-white);">
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="newEnsayoTolerancia">Minutos Tolerancia *</label>
+            <input type="number" id="newEnsayoTolerancia" class="form-control" value="10" min="0" max="60" required>
+          </div>
+        </div>
+
+        <div style="display: flex; gap: 0.8rem; margin-top: 1.2rem;">
+          <button type="submit" class="btn btn-gold" style="flex: 2;">
+            <i class="fa-solid fa-calendar-check"></i> Programar Ensayo
+          </button>
+          <button type="button" class="btn btn-outline" onclick="closeModalCrearEnsayo()" style="flex: 1;">
+            Cancelar
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal para Programar Nueva Cuota Financiera -->
+  <div class="modal-overlay" id="modalCrearCuota">
+    <div class="modal-card" style="max-width: 480px; text-align: left;">
+      <h3 style="color: var(--color-gold); font-family: var(--font-heading); font-size: 1.3rem; margin-bottom: 0.5rem; text-align: center;">
+        <i class="fa-solid fa-calendar-plus"></i> Programar Nueva Cuota Financiera
+      </h3>
+      <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1.2rem; text-align: center;">
+        Defina la cuota oficial. Los fraternos la verán reflejada en su perfil con la fecha límite y el monto.
+      </p>
+
+      <form id="formCrearCuota">
+        <div class="form-group">
+          <label class="form-label" for="newCuotaNombre">Nombre o Concepto de la Cuota *</label>
+          <input type="text" id="newCuotaNombre" class="form-control" placeholder="Ej: Cuota Inicial Traje de Baile" required>
+        </div>
+
+        <div class="grid-2">
+          <div class="form-group">
+            <label class="form-label" for="newCuotaFechaLimite">Fecha Límite de Pago *</label>
+            <input type="date" id="newCuotaFechaLimite" class="form-control" required style="background: var(--bg-card); color: var(--color-white);">
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="newCuotaMonto">Monto en Bolivianos (Bs) *</label>
+            <input type="number" id="newCuotaMonto" class="form-control" placeholder="Ej: 150" min="1" required>
+          </div>
+        </div>
+
+        <div style="display: flex; gap: 0.8rem; margin-top: 1.2rem;">
+          <button type="submit" class="btn btn-gold" style="flex: 2;">
+            <i class="fa-solid fa-floppy-disk"></i> Guardar Programación
+          </button>
+          <button type="button" class="btn btn-outline" onclick="closeModalCrearCuota()" style="flex: 1;">
+            Cancelar
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal Registrar Pago Manual de Cuota / Multa -->
+  <div class="modal-overlay" id="modalPagoManual">
+    <div class="modal-card" style="max-width: 520px; text-align: left;">
+      <h3 style="color: var(--color-gold); font-family: var(--font-heading); font-size: 1.3rem; margin-bottom: 0.5rem; text-align: center;">
+        <i class="fa-solid fa-hand-holding-dollar"></i> Registro Manual de Pago (Tesorería)
+      </h3>
+      <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1.2rem; text-align: center;">
+        Registre manualmente un pago en efectivo o banco especificando la fecha real y el monto.
+      </p>
+
+      <form id="formPagoManual">
+        <div class="form-group">
+          <label class="form-label" for="manualPagoFraterno">Seleccionar Fraterno *</label>
+          <select id="manualPagoFraterno" class="form-control" required style="background: var(--bg-card); color: var(--color-white);"></select>
+        </div>
+
+        <div class="grid-2">
+          <div class="form-group">
+            <label class="form-label" for="manualPagoTipo">Tipo de Registro *</label>
+            <select id="manualPagoTipo" class="form-control" required style="background: var(--bg-card); color: var(--color-white);">
+              <option value="CUOTA">💳 Pago de Cuota Programada</option>
+              <option value="MULTA">⚠️ Pago de Multa por Asistencia</option>
+            </select>
+          </div>
+
+          <div class="form-group" id="groupManualCuotaSelect">
+            <label class="form-label" for="manualPagoCuotaSelect">Cuota Programada *</label>
+            <select id="manualPagoCuotaSelect" class="form-control" style="background: var(--bg-card); color: var(--color-white);"></select>
+          </div>
+        </div>
+
+        <div class="grid-2">
+          <div class="form-group">
+            <label class="form-label" for="manualPagoFecha">Fecha del Pago *</label>
+            <input type="date" id="manualPagoFecha" class="form-control" required style="background: var(--bg-card); color: var(--color-white);">
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="manualPagoMonto">Monto Cancelado (Bs) *</label>
+            <input type="number" id="manualPagoMonto" class="form-control" placeholder="Ej: 150" min="1" required>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="manualPagoConcepto">Detalle / Concepto u Observación</label>
+          <input type="text" id="manualPagoConcepto" class="form-control" placeholder="Ej: Pago de Cuota Inicial abonado en efectivo">
+        </div>
+
+        <div style="display: flex; gap: 0.8rem; margin-top: 1.2rem;">
+          <button type="submit" class="btn btn-gold" style="flex: 2;">
+            <i class="fa-solid fa-receipt"></i> Registrar Pago Oficial
+          </button>
+          <button type="button" class="btn btn-outline" onclick="closeModalPagoManual()" style="flex: 1;">
+            Cancelar
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
