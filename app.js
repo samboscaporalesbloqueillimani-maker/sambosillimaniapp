@@ -1254,7 +1254,7 @@ function renderTablaEnsayosProgramados() {
 
   const ensayos = AppState.ensayos || [];
   if (ensayos.length === 0) {
-    tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; color: var(--text-muted); padding: 1rem;">No hay días de ensayo general programados.</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; color: var(--text-muted); padding: 1.5rem;">No hay días de ensayo general programados.</td></tr>`;
     return;
   }
 
@@ -1267,7 +1267,7 @@ function renderTablaEnsayosProgramados() {
 
     if (e.cerrado) {
       badgeClass = 'badge-danger';
-      estadoLabel = '🔴 Ensayo Concluido';
+      estadoLabel = '🔴 Concluido';
     } else if (estadoMarcado === 'SALIDA') {
       badgeClass = 'badge-primary';
       estadoLabel = '🔵 Salida Habilitada';
@@ -1275,28 +1275,82 @@ function renderTablaEnsayosProgramados() {
 
     return `
       <tr style="${isActive ? 'background: rgba(255, 215, 0, 0.06); border-left: 3px solid var(--color-gold);' : ''}">
-        <td><strong>${e.fecha}</strong> ${isActive ? '<span class="badge badge-gold" style="font-size:0.7rem; margin-left:0.3rem;">ACTIVO</span>' : ''}</td>
-        <td>${e.desc}</td>
-        <td>${e.horaInicio || '10:30'} AM</td>
-        <td><span class="badge ${badgeClass}">${estadoLabel}</span></td>
         <td>
-          <div style="display: flex; gap: 0.4rem; flex-wrap: wrap;">
+          <input type="date" id="ensayo_fecha_${e.id}" class="form-control" value="${e.fecha}" style="padding: 0.35rem 0.5rem; font-size: 0.85rem; background: var(--bg-card); color: var(--color-white); min-width: 135px;" required>
+          ${isActive ? '<span class="badge badge-gold" style="font-size:0.65rem; margin-top:0.3rem; display:inline-block;">DÍA ACTIVO</span>' : ''}
+        </td>
+        <td>
+          <input type="text" id="ensayo_desc_${e.id}" class="form-control" value="${e.desc}" placeholder="Lugar o descripción del ensayo..." style="padding: 0.35rem 0.6rem; font-size: 0.85rem; background: var(--bg-card); color: var(--color-white); min-width: 200px;" required>
+        </td>
+        <td>
+          <input type="time" id="ensayo_hora_${e.id}" class="form-control" value="${e.horaInicio || '10:30'}" style="padding: 0.35rem 0.5rem; font-size: 0.85rem; background: var(--bg-card); color: var(--color-white); width: 105px;" required>
+        </td>
+        <td>
+          <span class="badge ${badgeClass}" style="font-size: 0.75rem; white-space: nowrap;">${estadoLabel}</span>
+        </td>
+        <td>
+          <div style="display: flex; gap: 0.4rem; flex-wrap: wrap; align-items: center;">
+            <button class="btn btn-gold" style="padding: 0.35rem 0.65rem; font-size: 0.78rem; font-weight: 700;" onclick="guardarEdicionEnsayo('${e.id}')" title="Guardar y actualizar fecha, lugar y horario">
+              <i class="fa-solid fa-floppy-disk"></i> Guardar
+            </button>
             ${!isActive ? `
-              <button class="btn btn-outline" style="padding: 0.25rem 0.6rem; font-size: 0.75rem;" onclick="seleccionarEnsayoActivo('${e.id}')">
-                <i class="fa-solid fa-calendar-check"></i> Activar Día
+              <button class="btn btn-outline" style="padding: 0.35rem 0.6rem; font-size: 0.75rem;" onclick="seleccionarEnsayoActivo('${e.id}')" title="Activar este día para escaneo">
+                <i class="fa-solid fa-calendar-check"></i> Activar
               </button>
             ` : ''}
-            <button class="btn btn-gold" style="padding: 0.25rem 0.6rem; font-size: 0.75rem; background: #198754; border-color: #198754; color: #fff;" onclick="setModoMarcadoEnsayo('${e.id}', 'ENTRADA')">
-              <i class="fa-solid fa-right-to-bracket"></i> Habilitar Ingreso
+            <button class="btn btn-gold" style="padding: 0.35rem 0.6rem; font-size: 0.75rem; background: #198754; border-color: #198754; color: #fff;" onclick="setModoMarcadoEnsayo('${e.id}', 'ENTRADA')" title="Habilitar marcados de ingreso">
+              <i class="fa-solid fa-right-to-bracket"></i> Ingreso
             </button>
-            <button class="btn btn-gold" style="padding: 0.25rem 0.6rem; font-size: 0.75rem; background: #0D6EFD; border-color: #0D6EFD; color: #fff;" onclick="setModoMarcadoEnsayo('${e.id}', 'SALIDA')">
-              <i class="fa-solid fa-right-from-bracket"></i> Habilitar Salida
+            <button class="btn btn-gold" style="padding: 0.35rem 0.6rem; font-size: 0.75rem; background: #0D6EFD; border-color: #0D6EFD; color: #fff;" onclick="setModoMarcadoEnsayo('${e.id}', 'SALIDA')" title="Habilitar marcados de salida">
+              <i class="fa-solid fa-right-from-bracket"></i> Salida
+            </button>
+            <button class="btn btn-danger" style="padding: 0.35rem 0.55rem; font-size: 0.75rem;" onclick="eliminarEnsayo('${e.id}')" title="Eliminar este ensayo">
+              <i class="fa-solid fa-trash"></i>
             </button>
           </div>
         </td>
       </tr>
     `;
   }).join('');
+}
+
+function guardarEdicionEnsayo(id) {
+  const ens = (AppState.ensayos || []).find(e => e.id === id);
+  if (!ens) return;
+
+  const fechaEl = document.getElementById(`ensayo_fecha_${id}`);
+  const descEl = document.getElementById(`ensayo_desc_${id}`);
+  const horaEl = document.getElementById(`ensayo_hora_${id}`);
+
+  if (!fechaEl || !descEl) return;
+
+  const newFecha = fechaEl.value.trim();
+  const newDesc = descEl.value.trim();
+  const newHora = horaEl ? horaEl.value : (ens.horaInicio || '10:30');
+
+  if (!newFecha || !newDesc) {
+    showToast('Campos Incompletos', 'La fecha y el lugar/descripción son obligatorios.', 'error');
+    return;
+  }
+
+  ens.fecha = newFecha;
+  ens.desc = newDesc;
+  ens.horaInicio = newHora;
+
+  saveState();
+  renderAdminData();
+  showToast('Ensayo Actualizado', `Se guardaron los cambios para '${newDesc}' (${newFecha}).`, 'success', 3500);
+}
+
+function eliminarEnsayo(id) {
+  if (!confirm('¿Está seguro de eliminar este ensayo general programado?')) return;
+  AppState.ensayos = (AppState.ensayos || []).filter(e => e.id !== id);
+  if (AppState.ensayoActivoId === id) {
+    AppState.ensayoActivoId = AppState.ensayos.length > 0 ? AppState.ensayos[0].id : null;
+  }
+  saveState();
+  renderAdminData();
+  showToast('Ensayo Eliminado', 'El ensayo fue eliminado del cronograma.', 'warning');
 }
 
 function seleccionarEnsayoActivo(ensayoId) {
@@ -1567,18 +1621,75 @@ function renderTablaCuotasProgramadas() {
 
     return `
       <tr>
-        <td><strong>${h.nombre}</strong></td>
-        <td><i class="fa-solid fa-calendar-day" style="color: var(--color-gold);"></i> ${h.fechaLimite}</td>
-        <td><strong style="color: #2ECC71; font-size: 1.05rem;">Bs ${h.monto}</strong></td>
-        <td><span class="badge badge-gold">${alDiaCount} de ${fraternos.length} Fraternos Al Día</span></td>
         <td>
-          <button class="btn btn-outline" style="padding: 0.3rem 0.7rem; font-size: 0.8rem;" onclick="openModalPagoManual('', 'CUOTA')">
-            <i class="fa-solid fa-hand-holding-dollar"></i> Cobrar Cuota
-          </button>
+          <input type="text" id="cuota_nombre_${h.id}" class="form-control" value="${h.nombre}" placeholder="Nombre o concepto de la cuota..." style="padding: 0.35rem 0.6rem; font-size: 0.85rem; background: var(--bg-card); color: var(--color-white); min-width: 190px;" required>
+        </td>
+        <td>
+          <input type="date" id="cuota_fecha_${h.id}" class="form-control" value="${h.fechaLimite}" style="padding: 0.35rem 0.5rem; font-size: 0.85rem; background: var(--bg-card); color: var(--color-white); min-width: 135px;" required>
+        </td>
+        <td>
+          <div style="display: flex; align-items: center; gap: 0.3rem;">
+            <span style="font-weight: 700; color: var(--color-gold); font-size: 0.85rem;">Bs</span>
+            <input type="number" id="cuota_monto_${h.id}" class="form-control" value="${h.monto}" min="1" step="1" style="padding: 0.35rem 0.5rem; font-size: 0.95rem; font-weight: 800; background: var(--bg-card); color: #2ECC71; width: 100px;" required>
+          </div>
+        </td>
+        <td>
+          <span class="badge ${alDiaCount === fraternos.length && fraternos.length > 0 ? 'badge-puntual' : 'badge-gold'}" style="font-size: 0.75rem; white-space: nowrap;">
+            ${alDiaCount} de ${fraternos.length} al Día
+          </span>
+        </td>
+        <td>
+          <div style="display: flex; gap: 0.4rem; flex-wrap: wrap; align-items: center;">
+            <button class="btn btn-gold" style="padding: 0.35rem 0.65rem; font-size: 0.78rem; font-weight: 700;" onclick="guardarEdicionCuota('${h.id}')" title="Guardar cambios de nombre, fecha y monto">
+              <i class="fa-solid fa-floppy-disk"></i> Guardar
+            </button>
+            <button class="btn btn-outline" style="padding: 0.35rem 0.6rem; font-size: 0.75rem;" onclick="openModalPagoManual('', 'CUOTA')" title="Cobrar cuota a un fraterno">
+              <i class="fa-solid fa-hand-holding-dollar"></i> Cobrar
+            </button>
+            <button class="btn btn-danger" style="padding: 0.35rem 0.55rem; font-size: 0.75rem;" onclick="eliminarCuota('${h.id}')" title="Eliminar cuota">
+              <i class="fa-solid fa-trash"></i>
+            </button>
+          </div>
         </td>
       </tr>
     `;
   }).join('');
+}
+
+function guardarEdicionCuota(id) {
+  const cuota = (AppState.hitosCuotas || []).find(c => c.id === id);
+  if (!cuota) return;
+
+  const nombreEl = document.getElementById(`cuota_nombre_${id}`);
+  const fechaEl = document.getElementById(`cuota_fecha_${id}`);
+  const montoEl = document.getElementById(`cuota_monto_${id}`);
+
+  if (!nombreEl || !fechaEl || !montoEl) return;
+
+  const newNombre = nombreEl.value.trim();
+  const newFecha = fechaEl.value.trim();
+  const newMonto = parseFloat(montoEl.value) || 0;
+
+  if (!newNombre || !newFecha || newMonto <= 0) {
+    showToast('Campos Inválidos', 'Verifique que el nombre, fecha y monto en Bs sean válidos.', 'error');
+    return;
+  }
+
+  cuota.nombre = newNombre;
+  cuota.fechaLimite = newFecha;
+  cuota.monto = newMonto;
+
+  saveState();
+  renderAdminData();
+  showToast('Cuota Actualizada', `Se actualizó la cuota '${newNombre}' a Bs ${newMonto} (${newFecha}).`, 'success', 3500);
+}
+
+function eliminarCuota(id) {
+  if (!confirm('¿Está seguro de eliminar esta cuota programada?')) return;
+  AppState.hitosCuotas = (AppState.hitosCuotas || []).filter(c => c.id !== id);
+  saveState();
+  renderAdminData();
+  showToast('Cuota Eliminada', 'La cuota fue eliminada del cronograma financiero.', 'warning');
 }
 
 function renderRegistroMultasTable() {
@@ -2032,7 +2143,7 @@ function initProfilePanel() {
   const elCanguro = document.getElementById('tallaCanguro');
 
   if (elNombre) elNombre.textContent = dancer.nombre;
-  if (elBloque) elBloque.textContent = `Bloque: ${dancer.bloque}`;
+  if (elBloque) elBloque.textContent = `${dancer.bloque} • Bloque Illimani`;
   if (elCategoria) {
     elCategoria.textContent = dancer.categoria || calcularCategoria(dancer.anioIngreso);
     elCategoria.style.background = dancer.categoria === 'Antiguo' ? 'rgba(255, 215, 0, 0.2)' : 'rgba(231, 76, 60, 0.2)';
@@ -2081,6 +2192,38 @@ function initProfilePanel() {
     });
   }
 
+  // Poblar y enlazar formulario de contactos y ficha médica
+  const inputPhone = document.getElementById('profilePhone');
+  const inputEmerg = document.getElementById('profileEmergencyContact');
+  const inputMed = document.getElementById('profileMedicalCondition');
+  if (inputPhone) inputPhone.value = dancer.telefono || '';
+  if (inputEmerg) inputEmerg.value = dancer.contacto_emergencia || '';
+  if (inputMed) inputMed.value = dancer.ficha_medica || '';
+
+  const formMedical = document.getElementById('formProfileMedical');
+  if (formMedical) {
+    formMedical.addEventListener('submit', function(e) {
+      e.preventDefault();
+      dancer.telefono = inputPhone ? inputPhone.value.trim() : (dancer.telefono || '');
+      dancer.contacto_emergencia = inputEmerg ? inputEmerg.value.trim() : (dancer.contacto_emergencia || '');
+      dancer.ficha_medica = inputMed ? inputMed.value.trim() : (dancer.ficha_medica || 'Ninguna');
+
+      let fraternosList = getFraternos();
+      const idx = fraternosList.findIndex(f => f.ci === dancer.ci);
+      if (idx !== -1) {
+        fraternosList[idx].telefono = dancer.telefono;
+        fraternosList[idx].contacto_emergencia = dancer.contacto_emergencia;
+        fraternosList[idx].ficha_medica = dancer.ficha_medica;
+        saveFraternos(fraternosList);
+      }
+      localStorage.setItem('sambos_active_user', JSON.stringify(dancer));
+      showToast('Datos Actualizados', 'Sus datos de contacto y ficha médica se han guardado.', 'success');
+    });
+  }
+
+  // Inicializar navegación por 3 pestañas interactivas de Fraterno
+  initProfileTabNavigation();
+
   renderQRCodeFraterno(dancer.ci, dancer.nombre);
   renderHistorialEnsayosFraterno(dancer);
   renderCuotasProgramadasFraterno(dancer);
@@ -2094,6 +2237,28 @@ function initProfilePanel() {
       window.location.href = 'index.html';
     });
   }
+}
+
+function initProfileTabNavigation() {
+  const tabBtns = document.querySelectorAll('#profileNavTabs .tab-btn');
+  const tabContents = document.querySelectorAll('#profileMainContainer .tab-content');
+
+  if (!tabBtns.length) return;
+
+  tabBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+      const targetTabId = btn.getAttribute('data-tab');
+
+      tabBtns.forEach(b => b.classList.remove('active'));
+      tabContents.forEach(c => c.classList.remove('active'));
+
+      btn.classList.add('active');
+      const targetContent = document.getElementById(targetTabId);
+      if (targetContent) {
+        targetContent.classList.add('active');
+      }
+    });
+  });
 }
 
 function renderQRCodeFraterno(ci, nombre = '') {
