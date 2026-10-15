@@ -1,0 +1,184 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 380" width="320" height="380">
+  <defs>
+    <linearGradient id="headerGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#002F6C"/>
+      <stop offset="100%" stop-color="#0A1832"/>
+    </linearGradient>
+    <filter id="shadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="4" stdDeviation="6" flood-color="#000" flood-opacity="0.25"/>
+    </filter>
+  </defs>
+
+  <!-- Background Card -->
+  <rect width="320" height="380" rx="20" fill="#FFFFFF" filter="url(#shadow)"/>
+  
+  <!-- Header Bar -->
+  <path d="M 0 20 Q 0 0 20 0 L 300 0 Q 320 0 320 20 L 320 54 L 0 54 Z" fill="url(#headerGrad)"/>
+  
+  <!-- Header Branding -->
+  <text x="160" y="26" font-family="Arial, Helvetica, sans-serif" font-size="12" font-weight="900" fill="#FFD700" text-anchor="middle" letter-spacing="1">PAGO QR SIMPLE</text>
+  <text x="160" y="44" font-family="Arial, Helvetica, sans-serif" font-size="10" font-weight="bold" fill="#FFFFFF" text-anchor="middle" letter-spacing="0.5">SAMBOS CAPORALES BLOQUE ILLIMANI</text>
+
+  <!-- Gold Divider -->
+  <rect x="0" y="54" width="320" height="3" fill="#FFD700"/>
+
+  <!-- QR Code Matrix (Version 3 Matrix Pattern) -->
+  <g transform="translate(45, 75)">
+    <!-- Finder Top-Left -->
+    <rect x="0" y="0" width="49" height="49" fill="#000000"/>
+    <rect x="7" y="7" width="35" height="35" fill="#FFFFFF"/>
+    <rect x="14" y="14" width="21" height="21" fill="#000000"/>
+
+    <!-- Finder Top-Right -->
+    <rect x="181" y="0" width="49" height="49" fill="#000000"/>
+    <rect x="188" y="7" width="35" height="35" fill="#FFFFFF"/>
+    <rect x="195" y="14" width="21" height="21" fill="#000000"/>
+
+    <!-- Finder Bottom-Left -->
+    <rect x="0" y="181" width="49" height="49" fill="#000000"/>
+    <rect x="7" y="188" width="35" height="35" fill="#FFFFFF"/>
+    <rect x="14" y="195" width="21" height="21" fill="#000000"/>
+
+    <!-- Timing Patterns -->
+    <g fill="#000000">
+      <rect x="42" y="42" width="7" height="7"/>
+      <rect x="56" y="42" width="7" height="7"/>
+      <rect x="70" y="42" width="7" height="7"/>
+      <rect x="84" y="42" width="7" height="7"/>
+      <rect x="98" y="42" width="7" height="7"/>
+      <rect x="112" y="42" width="7" height="7"/>
+      <rect x="126" y="42" width="7" height="7"/>
+      <rect x="140" y="42" width="7" height="7"/>
+      <rect x="154" y="42" width="7" height="7"/>
+      <rect x="168" y="42" width="7" height="7"/>
+
+      <rect x="42" y="56" width="7" height="7"/>
+      <rect x="42" y="70" width="7" height="7"/>
+      <rect x="42" y="84" width="7" height="7"/>
+      <rect x="42" y="98" width="7" height="7"/>
+      <rect x="42" y="112" width="7" height="7"/>
+      <rect x="42" y="126" width="7" height="7"/>
+      <rect x="42" y="140" width="7" height="7"/>
+      <rect x="42" y="154" width="7" height="7"/>
+      <rect x="42" y="168" width="7" height="7"/>
+    </g>
+
+    <!-- Alignment Pattern -->
+    <rect x="147" y="147" width="35" height="35" fill="#000000"/>
+    <rect x="154" y="154" width="21" height="21" fill="#FFFFFF"/>
+    <rect x="161" y="161" width="7" height="7" fill="#000000"/>
+
+    <!-- Data Blocks Generated Pattern -->
+    <g fill="#000000">
+      <!-- Top Zone -->
+      <rect x="56" y="7" width="7" height="7"/>
+      <rect x="70" y="14" width="7" height="7"/>
+      <rect x="84" y="7" width="7" height="7"/>
+      <rect x="98" y="14" width="7" height="7"/>
+      <rect x="112" y="7" width="7" height="7"/>
+      <rect x="126" y="14" width="7" height="7"/>
+      <rect x="140" y="7" width="7" height="7"/>
+      <rect x="154" y="21" width="7" height="7"/>
+      <rect x="168" y="14" width="7" height="7"/>
+
+      <rect x="56" y="28" width="7" height="7"/>
+      <rect x="77" y="28" width="7" height="7"/>
+      <rect x="91" y="28" width="7" height="7"/>
+      <rect x="105" y="28" width="7" height="7"/>
+      <rect x="126" y="28" width="7" height="7"/>
+      <rect x="147" y="28" width="7" height="7"/>
+
+      <!-- Mid-Left Zone -->
+      <rect x="7" y="56" width="7" height="7"/>
+      <rect x="21" y="70" width="7" height="7"/>
+      <rect x="7" y="84" width="7" height="7"/>
+      <rect x="28" y="98" width="7" height="7"/>
+      <rect x="14" y="112" width="7" height="7"/>
+      <rect x="28" y="126" width="7" height="7"/>
+      <rect x="7" y="140" width="7" height="7"/>
+      <rect x="21" y="154" width="7" height="7"/>
+      <rect x="35" y="168" width="7" height="7"/>
+
+      <!-- Center Zone -->
+      <rect x="56" y="56" width="7" height="7"/>
+      <rect x="70" y="63" width="7" height="7"/>
+      <rect x="84" y="77" width="7" height="7"/>
+      <rect x="105" y="56" width="7" height="7"/>
+      <rect x="119" y="70" width="7" height="7"/>
+      <rect x="133" y="63" width="7" height="7"/>
+      <rect x="147" y="77" width="7" height="7"/>
+      <rect x="161" y="63" width="7" height="7"/>
+      <rect x="175" y="56" width="7" height="7"/>
+
+      <rect x="56" y="84" width="7" height="7"/>
+      <rect x="70" y="98" width="7" height="7"/>
+      <rect x="98" y="84" width="7" height="7"/>
+      <rect x="112" y="105" width="7" height="7"/>
+      <rect x="126" y="91" width="7" height="7"/>
+      <rect x="140" y="112" width="7" height="7"/>
+      <rect x="154" y="98" width="7" height="7"/>
+      <rect x="168" y="119" width="7" height="7"/>
+      <rect x="182" y="91" width="7" height="7"/>
+      <rect x="196" y="105" width="7" height="7"/>
+      <rect x="210" y="84" width="7" height="7"/>
+
+      <!-- Mid-Right Zone -->
+      <rect x="189" y="56" width="7" height="7"/>
+      <rect x="203" y="70" width="7" height="7"/>
+      <rect x="217" y="63" width="7" height="7"/>
+      <rect x="182" y="133" width="7" height="7"/>
+      <rect x="196" y="147" width="7" height="7"/>
+      <rect x="210" y="140" width="7" height="7"/>
+      <rect x="224" y="154" width="7" height="7"/>
+      <rect x="189" y="168" width="7" height="7"/>
+      <rect x="210" y="182" width="7" height="7"/>
+      <rect x="196" y="196" width="7" height="7"/>
+      <rect x="217" y="210" width="7" height="7"/>
+
+      <!-- Bottom Zone -->
+      <rect x="56" y="182" width="7" height="7"/>
+      <rect x="70" y="196" width="7" height="7"/>
+      <rect x="84" y="189" width="7" height="7"/>
+      <rect x="98" y="203" width="7" height="7"/>
+      <rect x="112" y="182" width="7" height="7"/>
+      <rect x="126" y="196" width="7" height="7"/>
+      <rect x="140" y="210" width="7" height="7"/>
+      <rect x="154" y="196" width="7" height="7"/>
+      <rect x="168" y="210" width="7" height="7"/>
+
+      <rect x="56" y="217" width="7" height="7"/>
+      <rect x="77" y="210" width="7" height="7"/>
+      <rect x="91" y="224" width="7" height="7"/>
+      <rect x="105" y="217" width="7" height="7"/>
+      <rect x="126" y="224" width="7" height="7"/>
+      <rect x="147" y="224" width="7" height="7"/>
+      <rect x="161" y="217" width="7" height="7"/>
+      <rect x="175" y="224" width="7" height="7"/>
+
+      <!-- Additional fill modules for high density -->
+      <rect x="56" y="119" width="7" height="7"/>
+      <rect x="70" y="133" width="7" height="7"/>
+      <rect x="84" y="126" width="7" height="7"/>
+      <rect x="98" y="140" width="7" height="7"/>
+      <rect x="112" y="126" width="7" height="7"/>
+      <rect x="126" y="140" width="7" height="7"/>
+      <rect x="56" y="147" width="7" height="7"/>
+      <rect x="77" y="161" width="7" height="7"/>
+      <rect x="91" y="154" width="7" height="7"/>
+      <rect x="105" y="168" width="7" height="7"/>
+      <rect x="119" y="154" width="7" height="7"/>
+      <rect x="133" y="168" width="7" height="7"/>
+      <rect x="56" y="168" width="7" height="7"/>
+    </g>
+
+    <!-- Center Emblem Badge -->
+    <rect x="92" y="92" width="46" height="46" rx="8" fill="#FFFFFF" stroke="#002F6C" stroke-width="2"/>
+    <text x="115" y="114" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="900" fill="#DA291C" text-anchor="middle">QR</text>
+    <text x="115" y="127" font-family="Arial, Helvetica, sans-serif" font-size="7" font-weight="bold" fill="#002F6C" text-anchor="middle">SIMPLE</text>
+  </g>
+
+  <!-- Footer Banner -->
+  <rect x="20" y="322" width="280" height="42" rx="8" fill="#F8F9FA" stroke="#E5E7EB" stroke-width="1"/>
+  <text x="160" y="339" font-family="Arial, Helvetica, sans-serif" font-size="11" font-weight="bold" fill="#002F6C" text-anchor="middle">CUENTA OFICIAL TESORERÍA (BOB)</text>
+  <text x="160" y="354" font-family="Arial, Helvetica, sans-serif" font-size="9" fill="#6B7280" text-anchor="middle">Escanee desde cualquier banca móvil autorizada</text>
+</svg>

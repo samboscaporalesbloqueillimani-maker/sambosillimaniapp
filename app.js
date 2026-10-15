@@ -14,134 +14,23 @@ const MULTA_ATRASO = 30;
 const MULTA_FALTA = 50;
 const MULTA_SIN_SALIDA = 30;
 
-// Base de Datos Oficial Inicial
-const OFFICIAL_INITIAL_FRATERNOS = [
-  {
-    id: "SB-01",
-    ci: "1234567",
-    nombre: "Carlos Llanes",
-    bloque: "Varones",
-    fechaNacimiento: "15/04/1998",
-    anioIngreso: 2023,
-    categoria: "Antiguo",
-    direccion: "Av. Illimani #450",
-    rol: "Admin / Guía Central",
-    roleType: "admin",
-    tallas: { polera: "M", chamarra: "L", canguro: "M" },
-    pagos: [],
-    deuda: 30,
-    multasAcumuladas: 30,
-    ficha_medica: "Ninguna",
-    telefono: "77212345",
-    contacto_emergencia: "María Llanes - 77512345",
-    foto: "",
-    horaEntrada: null,
-    horaSalida: null,
-    estadoAsistencia: "Pendiente",
-    multaBob: 30
-  },
-  {
-    id: "SB-02",
-    ci: "7654321",
-    nombre: "Elena Mendoza",
-    bloque: "Cholitas",
-    fechaNacimiento: "22/10/2000",
-    anioIngreso: 2025,
-    categoria: "Nuevo",
-    direccion: "Calle Sagárnaga #120",
-    rol: "Danzante",
-    roleType: "danzante",
-    tallas: { polera: "S", chamarra: "M", canguro: "S" },
-    pagos: [],
-    deuda: 50,
-    multasAcumuladas: 50,
-    ficha_medica: "Asma - Usa inhalador",
-    telefono: "70612345",
-    contacto_emergencia: "Pedro Mendoza - 70512345",
-    foto: "",
-    horaEntrada: null,
-    horaSalida: null,
-    estadoAsistencia: "Pendiente",
-    multaBob: 50
-  },
-  {
-    id: "SB-03",
-    ci: "4567890",
-    nombre: "Mateo Condori",
-    bloque: "Jachas",
-    fechaNacimiento: "05/08/1995",
-    anioIngreso: 2022,
-    categoria: "Antiguo",
-    direccion: "Zona Central, Calle Potosí",
-    rol: "Encargado de Asistencia",
-    roleType: "encargado_asistencia",
-    tallas: { polera: "XL", chamarra: "XL", canguro: "L" },
-    pagos: [],
-    deuda: 0,
-    multasAcumuladas: 0,
-    ficha_medica: "Ninguna",
-    telefono: "71512345",
-    contacto_emergencia: "Félix Condori - 71212345",
-    foto: "",
-    horaEntrada: null,
-    horaSalida: null,
-    estadoAsistencia: "Pendiente",
-    multaBob: 0
-  },
-  {
-    id: "SB-04",
-    ci: "9876543",
-    nombre: "Sofía Vargas",
-    bloque: "Miskys",
-    fechaNacimiento: "12/01/2002",
-    anioIngreso: 2026,
-    categoria: "Nuevo",
-    direccion: "Sopocachi, Calle Belisario Salinas",
-    rol: "Encargado de Pagos",
-    roleType: "encargado_pagos",
-    tallas: { polera: "M", chamarra: "M", canguro: "M" },
-    pagos: [],
-    deuda: 0,
-    multasAcumuladas: 0,
-    ficha_medica: "Alergia a la Penicilina",
-    telefono: "73012345",
-    contacto_emergencia: "Luz Vargas - 73212345",
-    foto: "",
-    horaEntrada: null,
-    horaSalida: null,
-    estadoAsistencia: "Pendiente",
-    multaBob: 0
-  }
-];
+// Base de Datos Oficial Inicial Limpia para Producción (Sin usuarios previos)
+const OFFICIAL_INITIAL_FRATERNOS = [];
 
 let AppState = {
-  fraternos: [],       // Danzantes oficiales activos
-  postulantes: [       // Postulantes en espera de aprobación por el Administrador
-    {
-      id: "POST-901",
-      ci: "8473921",
-      nombre: "Carlos Fernando Mamani",
-      bloque: "Varones",
-      fechaNacimiento: "10/06/2001",
-      anioIngreso: 2026,
-      categoria: "Nuevo",
-      direccion: "Zona Sur #300",
-      rol: "Danzante",
-      roleType: "danzante",
-      tallas: { polera: "M", chamarra: "L", canguro: "M" },
-      telefono: "71234567",
-      contacto_emergencia: "Padre: Juan Mamani - 71234568",
-      ficha_medica: "Ninguna",
-      foto: ""
-    }
-  ],
+  fraternos: [],       // Danzantes oficiales activos (Inicialmente vacío en producción)
+  postulantes: [],     // Postulantes en espera de aprobación por el Administrador
   ensayos: [
-    { id: "ENS-2026-09-20", fecha: "2026-09-20", desc: "Ensayo General - Plaza Villarroel", cerrado: false }
+    { id: "ENS-2026-09-20", fecha: "2026-09-20", desc: "Ensayo General - Plaza Villarroel", horaInicio: "10:30", horaTolerancia: 10, cerrado: false },
+    { id: "ENS-2026-09-27", fecha: "2026-09-27", desc: "Ensayo General - Av. Tejada Sorzano", horaInicio: "10:30", horaTolerancia: 10, cerrado: false },
+    { id: "ENS-2026-10-04", fecha: "2026-10-04", desc: "Ensayo Pre-Entrada - Estadio Hernando Siles", horaInicio: "10:30", horaTolerancia: 10, cerrado: false }
   ],
   hitosCuotas: [
-    { id: "HITO-1", nombre: "Cuota Ingreso de Bloque", monto: 150, fechaLimite: "2026-10-01" }
+    { id: "HITO-1", nombre: "Cuota Ingreso de Bloque", monto: 150, fechaLimite: "2026-10-15" },
+    { id: "HITO-2", nombre: "Cuota Inicial Traje de Baile", monto: 350, fechaLimite: "2026-11-01" },
+    { id: "HITO-3", nombre: "Cuota Final Traje & Banda", monto: 400, fechaLimite: "2026-12-01" }
   ],
-  asistencias: { "ENS-2026-09-20": {} },
+  asistencias: {},
   ensayoActivoId: "ENS-2026-09-20",
   finanzas: {}
 };
@@ -166,12 +55,26 @@ function getRoleTitle(roleType) {
 }
 
 function initLocalStorage() {
+  const PROD_CLEAN_KEY = "SAMBOS_PROD_CLEAN_V2026_1";
+  // Limpieza inicial de depuración: si existen datos demo residuales en el navegador, se purgan para producción
+  if (!localStorage.getItem(PROD_CLEAN_KEY)) {
+    localStorage.removeItem("SAMBOS_MASTER_STATE");
+    localStorage.removeItem("sambos_fraternos");
+    localStorage.removeItem("fraternos_illimani");
+    localStorage.removeItem("fraterno_logueado");
+    localStorage.removeItem("sambos_active_user");
+    localStorage.setItem(PROD_CLEAN_KEY, "true");
+    AppState.fraternos = [];
+    AppState.postulantes = [];
+    AppState.finanzas = {};
+    saveState();
+  }
+
   const savedMaster = localStorage.getItem("SAMBOS_MASTER_STATE") || localStorage.getItem("sambos_fraternos");
   if (!savedMaster) {
-    AppState.fraternos = OFFICIAL_INITIAL_FRATERNOS;
-    AppState.fraternos.forEach(f => {
-      AppState.finanzas[f.ci] = { hitosPagados: {}, totalMultasPendientes: f.deuda || 0 };
-    });
+    AppState.fraternos = [];
+    AppState.postulantes = [];
+    AppState.finanzas = {};
     saveState();
   } else {
     try {
@@ -182,11 +85,11 @@ function initLocalStorage() {
         AppState.fraternos = parsed;
       }
     } catch(e) {
-      AppState.fraternos = OFFICIAL_INITIAL_FRATERNOS;
+      AppState.fraternos = [];
     }
   }
 
-  if (!AppState.fraternos) AppState.fraternos = OFFICIAL_INITIAL_FRATERNOS;
+  if (!AppState.fraternos) AppState.fraternos = [];
   if (!AppState.postulantes) AppState.postulantes = [];
   if (!AppState.finanzas) AppState.finanzas = {};
 
@@ -206,7 +109,9 @@ function initLocalStorage() {
     ];
   }
 
-  if (!AppState.ensayoActivoId) AppState.ensayoActivoId = AppState.ensayos[0].id;
+  if (!AppState.ensayoActivoId && AppState.ensayos && AppState.ensayos.length > 0) {
+    AppState.ensayoActivoId = AppState.ensayos[0].id;
+  }
   if (!AppState.asistencias) AppState.asistencias = {};
 
   AppState.fraternos.forEach(f => {
@@ -484,7 +389,14 @@ function handleSelfRegistration(e) {
   const contactoEmergencia = document.getElementById('regContactoEmergencia').value.trim();
   const bloque = document.getElementById('regBloque').value;
   const anioIngreso = parseInt(document.getElementById('regAnioIngreso').value, 10);
-  const roleType = 'danzante';
+  
+  // CONDICIÓN AUTOMÁTICA DE PRODUCCIÓN:
+  // Si la tabla de usuarios está vacía, la primera persona que se registre en la plataforma
+  // recibe automáticamente el rol de "Administrador" (admin) con acceso total inmediato.
+  // Los registros posteriores reciben el rol de "danzante" y quedan pendientes de aprobación.
+  const esPrimerUsuario = (!AppState.fraternos || AppState.fraternos.length === 0);
+  const roleType = esPrimerUsuario ? 'admin' : 'danzante';
+
   const tallaPolera = document.getElementById('regTallaPolera').value;
   const tallaChamarra = document.getElementById('regTallaChamarra').value;
   const tallaCanguro = document.getElementById('regTallaCanguro').value;
@@ -549,7 +461,7 @@ function handleSelfRegistration(e) {
     closeRegisterModal();
     fotoRegistroBase64 = "";
 
-    showToast('Administrador Registrado', `¡Bienvenido ${nombre}! Su cuenta de Administrador tiene acceso total inmediato y no requiere aprobación.`, 'success', 5000);
+    showToast('Administrador Registrado', `¡Bienvenido ${nombre}! Al ser el primer usuario registrado en la plataforma, se le asignó automáticamente el rol de Administrador con acceso total inmediato.`, 'success', 6000);
     setTimeout(() => { window.location.href = 'admin.html'; }, 900);
     return;
   }
@@ -2135,69 +2047,44 @@ function initProfilePanel() {
   if (elChamarra) elChamarra.textContent = tallas.chamarra || '-';
   if (elCanguro) elCanguro.textContent = tallas.canguro || '-';
 
-  renderHistorialEnsayosFraterno(dancer);
-  renderCuotasProgramadasFraterno(dancer);
-  updateProfileFinancialSummary(dancer);
+  const elFoto = document.getElementById('perfilFoto');
+  if (elFoto) {
+    if (dancer.foto && dancer.foto.trim() !== '') {
+      elFoto.src = dancer.foto;
+    } else {
+      elFoto.src = 'escudo.png';
+    }
+  }
 
-  const receiptFileInput = document.getElementById('receiptFile');
-  if (receiptFileInput) {
-    receiptFileInput.addEventListener('change', function() {
+  const btnCambiarFoto = document.getElementById('btnCambiarFotoPerfil');
+  const inputCambiarFoto = document.getElementById('inputCambiarFotoPerfil');
+  if (btnCambiarFoto && inputCambiarFoto) {
+    btnCambiarFoto.addEventListener('click', () => inputCambiarFoto.click());
+    inputCambiarFoto.addEventListener('change', function() {
       if (this.files && this.files[0]) {
         const reader = new FileReader();
         reader.onload = function(e) {
-          const previewBox = document.getElementById('receiptPreviewBox');
-          const previewImg = document.getElementById('receiptPreviewImg');
-          if (previewBox && previewImg) {
-            previewImg.src = e.target.result;
-            previewBox.style.display = 'block';
+          const newBase64 = e.target.result;
+          dancer.foto = newBase64;
+          if (elFoto) elFoto.src = newBase64;
+          let fraternosList = getFraternos();
+          const idx = fraternosList.findIndex(f => f.ci === dancer.ci);
+          if (idx !== -1) {
+            fraternosList[idx].foto = newBase64;
+            saveFraternos(fraternosList);
           }
+          localStorage.setItem('sambos_active_user', JSON.stringify(dancer));
+          showToast('Fotografía Actualizada', 'Su fotografía de perfil se ha guardado exitosamente.', 'success');
         };
         reader.readAsDataURL(this.files[0]);
       }
     });
   }
 
-  const formPagoDanzante = document.getElementById('formInformarPago');
-  if (formPagoDanzante) {
-    formPagoDanzante.addEventListener('submit', (e) => {
-      e.preventDefault();
-      const amount = parseFloat(document.getElementById('receiptAmount').value) || 0;
-      const conceptType = document.getElementById('receiptConceptType') ? document.getElementById('receiptConceptType').value : 'CUOTA';
-      const fileInput = document.getElementById('receiptFile');
-
-      if (amount <= 0 || !fileInput || !fileInput.files[0]) {
-        showToast('Campos Incompletos', 'Ingrese un monto válido y adjunte la foto del comprobante.', 'error');
-        return;
-      }
-
-      const reader = new FileReader();
-      reader.onload = function(evt) {
-        const base64Img = evt.target.result;
-        const newPayment = {
-          id: "REC-" + Math.floor(100000 + Math.random() * 900000),
-          tipo: conceptType,
-          monto: amount,
-          concepto: conceptType === 'CUOTA' ? "Comprobante de Cuota Programada" : "Comprobante de Multa por Asistencia",
-          fecha: new Date().toLocaleDateString(),
-          reciboBase64: base64Img,
-          status: "pendiente"
-        };
-
-        let fraternosList = getFraternos();
-        const targetDancer = fraternosList.find(f => f.ci === dancer.ci);
-        if (targetDancer) {
-          if (!targetDancer.pagos) targetDancer.pagos = [];
-          targetDancer.pagos.push(newPayment);
-          saveFraternos(fraternosList);
-          showToast('Comprobante Enviado', 'Su comprobante en BOB fue enviado a Tesorería para validación.', 'success', 5000);
-          formPagoDanzante.reset();
-          const previewBox = document.getElementById('receiptPreviewBox');
-          if (previewBox) previewBox.style.display = 'none';
-        }
-      };
-      reader.readAsDataURL(fileInput.files[0]);
-    });
-  }
+  renderQRCodeFraterno(dancer.ci, dancer.nombre);
+  renderHistorialEnsayosFraterno(dancer);
+  renderCuotasProgramadasFraterno(dancer);
+  updateProfileFinancialSummary(dancer);
 
   const btnLogout = document.getElementById('btnLogout');
   if (btnLogout) {
@@ -2207,6 +2094,59 @@ function initProfilePanel() {
       window.location.href = 'index.html';
     });
   }
+}
+
+function renderQRCodeFraterno(ci, nombre = '') {
+  const qrContainer = document.getElementById('qrGiganteBox');
+  if (!qrContainer) return;
+  qrContainer.innerHTML = '';
+
+  const ciText = String(ci).trim();
+
+  if (typeof QRCode !== 'undefined') {
+    try {
+      new QRCode(qrContainer, {
+        text: ciText,
+        width: 220,
+        height: 220,
+        colorDark: "#000000",
+        colorLight: "#ffffff",
+        correctLevel: QRCode.CorrectLevel.H
+      });
+    } catch(err) {
+      renderQRImageFallback(qrContainer, ciText);
+    }
+  } else {
+    renderQRImageFallback(qrContainer, ciText);
+  }
+
+  const btnDownloadQR = document.getElementById('btnDownloadQR');
+  if (btnDownloadQR) {
+    btnDownloadQR.onclick = () => {
+      const canvas = qrContainer.querySelector('canvas');
+      const img = qrContainer.querySelector('img');
+      const link = document.createElement('a');
+      link.download = `QR_Fraterno_${ciText}.png`;
+      if (canvas) {
+        link.href = canvas.toDataURL('image/png');
+      } else if (img) {
+        link.href = img.src;
+      }
+      link.click();
+      showToast('Credencial Guardada', `Código QR de ${nombre || ciText} descargado correctamente.`, 'success');
+    };
+  }
+}
+
+function renderQRImageFallback(container, ciText) {
+  const qrImg = document.createElement('img');
+  qrImg.src = `https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=${encodeURIComponent(ciText)}`;
+  qrImg.alt = `Código QR CI ${ciText}`;
+  qrImg.style.width = '220px';
+  qrImg.style.height = '220px';
+  qrImg.style.display = 'block';
+  qrImg.style.margin = '0 auto';
+  container.appendChild(qrImg);
 }
 
 document.addEventListener('DOMContentLoaded', () => {
