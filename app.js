@@ -10,16 +10,14 @@
 // --------------------------------------------------------------------------
 const HORA_ENSAYO_INICIO = "10:30";
 const TOLERANCIA_MINUTOS = 10;
+const MULTA_ATRASO = 30;
+const MULTA_FALTA = 50;
+const MULTA_SIN_SALIDA = 30;
 
 // Base de Datos Oficial Inicial Limpia para Producción (Sin usuarios previos)
 const OFFICIAL_INITIAL_FRATERNOS = [];
 
 let AppState = {
-  configMultas: {
-    retraso: 30,
-    falta: 50,
-    sinSalida: 30
-  },
   fraternos: [],       // Danzantes oficiales activos (Inicialmente vacío en producción)
   postulantes: [],     // Postulantes en espera de aprobación por el Administrador
   ensayos: [
@@ -43,23 +41,6 @@ let isLateSimulation = false;
 let html5QrScanner = null;
 let chartInstance = null;
 
-function getMontoMulta(tipo) {
-  if (!AppState.configMultas) {
-    AppState.configMultas = { retraso: 30, falta: 50, sinSalida: 30 };
-  }
-  const key = String(tipo).toLowerCase();
-  if (key.includes('retraso') || key.includes('atraso')) {
-    return AppState.configMultas.retraso !== undefined ? Number(AppState.configMultas.retraso) : 30;
-  }
-  if (key.includes('falta') || key.includes('inasistencia')) {
-    return AppState.configMultas.falta !== undefined ? Number(AppState.configMultas.falta) : 50;
-  }
-  if (key.includes('salida')) {
-    return AppState.configMultas.sinSalida !== undefined ? Number(AppState.configMultas.sinSalida) : 30;
-  }
-  return 30;
-}
-
 function calcularCategoria(anioIngreso) {
   const anio = parseInt(anioIngreso, 10);
   if (isNaN(anio)) return "Nuevo";
@@ -74,7 +55,7 @@ function getRoleTitle(roleType) {
 }
 
 function initLocalStorage() {
-  const PROD_CLEAN_KEY = "SAMBOS_PROD_CLEAN_V2026_1";
+  const PROD_CLEAN_KEY = "SAMBOS_PROD_CLEAN_V2026_2";
   // Limpieza inicial de depuración: si existen datos demo residuales en el navegador, se purgan para producción
   if (!localStorage.getItem(PROD_CLEAN_KEY)) {
     localStorage.removeItem("SAMBOS_MASTER_STATE");
@@ -103,7 +84,7 @@ function initLocalStorage() {
       } else if (Array.isArray(parsed)) {
         AppState.fraternos = parsed;
       }
-    } catch(e) {
+    } catch (e) {
       AppState.fraternos = [];
     }
   }
@@ -111,9 +92,6 @@ function initLocalStorage() {
   if (!AppState.fraternos) AppState.fraternos = [];
   if (!AppState.postulantes) AppState.postulantes = [];
   if (!AppState.finanzas) AppState.finanzas = {};
-  if (!AppState.configMultas) {
-    AppState.configMultas = { retraso: 30, falta: 50, sinSalida: 30 };
-  }
 
   if (!AppState.ensayos || !Array.isArray(AppState.ensayos) || AppState.ensayos.length === 0) {
     AppState.ensayos = [
@@ -222,7 +200,7 @@ function playBeep(type = 'success') {
       osc.start();
       osc.stop(ctx.currentTime + 0.35);
     }
-  } catch (e) {}
+  } catch (e) { }
 }
 
 // --------------------------------------------------------------------------
@@ -287,24 +265,6 @@ function initWelcomeAndLogin() {
     });
   }
 
-  const regOrigen = document.getElementById('regOrigen');
-  const groupRegPais = document.getElementById('groupRegPaisOrigen');
-  const regPais = document.getElementById('regPaisOrigen');
-  if (regOrigen && groupRegPais) {
-    regOrigen.addEventListener('change', () => {
-      if (regOrigen.value === 'Extranjero') {
-        groupRegPais.style.display = 'block';
-        if (regPais) regPais.required = true;
-      } else {
-        groupRegPais.style.display = 'none';
-        if (regPais) {
-          regPais.required = false;
-          regPais.value = '';
-        }
-      }
-    });
-  }
-
   const formRegister = document.getElementById('formRegister');
   if (formRegister) {
     formRegister.addEventListener('submit', handleSelfRegistration);
@@ -343,7 +303,7 @@ function playFolkloreFanfare() {
       osc.start(ctx.currentTime + idx * 0.12);
       osc.stop(ctx.currentTime + idx * 0.12 + 0.35);
     });
-  } catch(e) {}
+  } catch (e) { }
 }
 
 function processLogin(ci, forceRole = null) {
@@ -354,7 +314,7 @@ function processLogin(ci, forceRole = null) {
   const postulanteIdx = AppState.postulantes.findIndex(p => p.ci === ci);
   if (postulanteIdx !== -1) {
     const postulante = AppState.postulantes[postulanteIdx];
-    
+
     // EL ADMINISTRADOR NUNCA REQUIERE APROBACIÓN: Se auto-aprueba e ingresa con acceso total
     if (forceRole === 'admin' || postulante.roleType === 'admin') {
       const nuevoId = "SB-" + String(AppState.fraternos.length + 1).padStart(2, '0');
@@ -404,7 +364,7 @@ function processLogin(ci, forceRole = null) {
 function previsualizarFotoRegistro(input) {
   if (input.files && input.files[0]) {
     const reader = new FileReader();
-    reader.onload = function(e) {
+    reader.onload = function (e) {
       fotoRegistroBase64 = e.target.result;
       const previewBox = document.getElementById("upload-preview-avatar");
       if (previewBox) {
@@ -429,7 +389,7 @@ function handleSelfRegistration(e) {
   const contactoEmergencia = document.getElementById('regContactoEmergencia').value.trim();
   const bloque = document.getElementById('regBloque').value;
   const anioIngreso = parseInt(document.getElementById('regAnioIngreso').value, 10);
-  
+
   // CONDICIÓN AUTOMÁTICA DE PRODUCCIÓN:
   // Si la tabla de usuarios está vacía, la primera persona que se registre en la plataforma
   // recibe automáticamente el rol de "Administrador" (admin) con acceso total inmediato.
@@ -441,16 +401,6 @@ function handleSelfRegistration(e) {
   const tallaChamarra = document.getElementById('regTallaChamarra').value;
   const tallaCanguro = document.getElementById('regTallaCanguro').value;
   const fichaMedica = document.getElementById('regFichaMedica').value.trim();
-
-  const regOrigen = document.getElementById('regOrigen');
-  const origenVal = regOrigen ? regOrigen.value : 'Bolivia';
-  const regPais = document.getElementById('regPaisOrigen');
-  const paisOrigenVal = (origenVal === 'Extranjero' && regPais) ? regPais.value.trim() : '';
-
-  if (origenVal === 'Extranjero' && !paisOrigenVal) {
-    showToast('País Obligatorio', 'Por favor indique su país de origen.', 'error');
-    return;
-  }
 
   if (!nombre || !ci || !fechaNacimiento || !telefono || !direccion || !contactoEmergencia || !bloque || !anioIngreso || !fichaMedica) {
     showToast('Campos Incompletos', 'Por favor complete todos los campos requeridos.', 'error');
@@ -485,8 +435,6 @@ function handleSelfRegistration(e) {
       anioIngreso: anioIngreso,
       categoria: categoriaCalculada,
       direccion: direccion,
-      origen: origenVal,
-      pais_origen: paisOrigenVal,
       rol: getRoleTitle('admin'),
       roleType: 'admin',
       tallas: { polera: tallaPolera, chamarra: tallaChamarra, canguro: tallaCanguro },
@@ -528,8 +476,6 @@ function handleSelfRegistration(e) {
     anioIngreso: anioIngreso,
     categoria: categoriaCalculada,
     direccion: direccion,
-    origen: origenVal,
-    pais_origen: paisOrigenVal,
     rol: "Danzante",
     roleType: "danzante",
     tallas: { polera: tallaPolera, chamarra: tallaChamarra, canguro: tallaCanguro },
@@ -571,7 +517,7 @@ function renderAdmisionesTable() {
   }
 
   AppState.postulantes.forEach(p => {
-    const avatarThumb = p.foto 
+    const avatarThumb = p.foto
       ? `<img src="${p.foto}" class="avatar-img-table" alt="Avatar">`
       : `<i class="fa-solid fa-user-clock" style="font-size: 1.5rem; color: var(--color-gold);"></i>`;
 
@@ -690,9 +636,8 @@ function initAdminPanel() {
     btnToggleSimTime.addEventListener('click', () => {
       isLateSimulation = !isLateSimulation;
       updateClockDisplay();
-      const montoRetraso = getMontoMulta('retraso');
-      showToast('Simulación de Hora', isLateSimulation ? `Hora: 10:45 AM (Atraso Bs ${montoRetraso})` : 'Hora: 10:35 AM (Puntual Bs 0)', isLateSimulation ? 'warning' : 'success');
-      btnToggleSimTime.innerHTML = isLateSimulation 
+      showToast('Simulación de Hora', isLateSimulation ? 'Hora: 10:45 AM (Atraso Bs 30)' : 'Hora: 10:35 AM (Puntual Bs 0)', isLateSimulation ? 'warning' : 'success');
+      btnToggleSimTime.innerHTML = isLateSimulation
         ? '<i class="fa-solid fa-backward-step"></i> Simular Puntual (10:35 AM)'
         : '<i class="fa-solid fa-forward-step"></i> Simular Atraso (10:45 AM)';
     });
@@ -722,7 +667,7 @@ function initAdminPanel() {
         html5QrScanner = new Html5QrcodeScanner("reader", { fps: 10, qrbox: { width: 250, height: 250 } }, false);
         html5QrScanner.render(onScanSuccess, onScanFailure);
       }
-    } catch (e) {}
+    } catch (e) { }
   }
 
   const btnConcluir = document.getElementById('btnConcluirEnsayo');
@@ -809,36 +754,7 @@ function initAdminPanel() {
     });
   }
 
-  const btnGuardarMultas = document.getElementById('btnGuardarConfigMultas');
-  if (btnGuardarMultas) btnGuardarMultas.addEventListener('click', guardarConfigMultas);
-
-  const formMultas = document.getElementById('formConfigMultas');
-  if (formMultas) formMultas.addEventListener('submit', guardarConfigMultas);
-
   renderAdminData();
-}
-
-function guardarConfigMultas(e) {
-  if (e) e.preventDefault();
-
-  const inputRetraso = document.getElementById('cfgMultaRetraso');
-  const inputFalta = document.getElementById('cfgMultaFalta');
-  const inputSinSalida = document.getElementById('cfgMultaSinSalida');
-
-  const retrasoVal = inputRetraso ? Math.max(0, parseInt(inputRetraso.value, 10) || 0) : 30;
-  const faltaVal = inputFalta ? Math.max(0, parseInt(inputFalta.value, 10) || 0) : 50;
-  const sinSalidaVal = inputSinSalida ? Math.max(0, parseInt(inputSinSalida.value, 10) || 0) : 30;
-
-  AppState.configMultas = {
-    retraso: retrasoVal,
-    falta: faltaVal,
-    sinSalida: sinSalidaVal
-  };
-
-  saveState();
-  renderAdminData();
-
-  showToast('Tarifas Guardadas', `Multas actualizadas: Retraso Bs ${retrasoVal}, Falta Bs ${faltaVal}, Sin Salida Bs ${sinSalidaVal}.`, 'success', 4000);
 }
 
 function aplicarRestriccionesDeRol(roleType) {
@@ -925,7 +841,7 @@ function onScanSuccess(decodedText) {
   processQRScan(decodedText.trim());
 }
 
-function onScanFailure() {}
+function onScanFailure() { }
 
 function processQRScan(ci) {
   let fraternos = getFraternos();
@@ -948,12 +864,11 @@ function processQRScan(ci) {
       showToast('ENTRADA PUNTUAL', `[${dancer.nombre}] marcó entrada a las ${horaActual}.`, 'success');
       playBeep('success');
     } else {
-      const montoAtraso = getMontoMulta('retraso');
       dancer.estadoAsistencia = 'Atraso';
-      dancer.multaBob = montoAtraso;
-      dancer.deuda = (dancer.deuda || 0) + montoAtraso;
-      syncAsistenciaRecord(ci, { horaEntrada: horaActual, estadoAsistencia: 'Atraso', multaBob: montoAtraso });
-      showToast('ATRASO REGISTRADO', `[${dancer.nombre}] marcó a las ${horaActual}. Multa Bs ${montoAtraso}`, 'error');
+      dancer.multaBob = MULTA_ATRASO;
+      dancer.deuda = (dancer.deuda || 0) + MULTA_ATRASO;
+      syncAsistenciaRecord(ci, { horaEntrada: horaActual, estadoAsistencia: 'Atraso', multaBob: MULTA_ATRASO });
+      showToast('ATRASO REGISTRADO', `[${dancer.nombre}] marcó a las ${horaActual}. Multa Bs 30`, 'error');
       playBeep('alarm');
     }
   } else {
@@ -980,20 +895,17 @@ function concluirEnsayo() {
   const activeEnsayo = (AppState.ensayos || []).find(e => e.id === AppState.ensayoActivoId);
   if (activeEnsayo) activeEnsayo.cerrado = true;
 
-  const montoFalta = getMontoMulta('falta');
-  const montoSinSalida = getMontoMulta('sinSalida');
-
   fraternos.forEach(f => {
     if (!f.horaEntrada && f.estadoAsistencia !== 'Licencia Justificada') {
       f.estadoAsistencia = 'Falta';
-      f.multaBob = montoFalta;
-      f.deuda = (f.deuda || 0) + montoFalta;
-      syncAsistenciaRecord(f.ci, { estadoAsistencia: 'Falta', multaBob: montoFalta });
+      f.multaBob = MULTA_FALTA;
+      f.deuda = (f.deuda || 0) + MULTA_FALTA;
+      syncAsistenciaRecord(f.ci, { estadoAsistencia: 'Falta', multaBob: MULTA_FALTA });
       faltantes++;
     } else if (f.horaEntrada && !f.horaSalida && f.estadoAsistencia !== 'Licencia Justificada') {
-      f.multaBob = (f.multaBob || 0) + montoSinSalida;
-      f.deuda = (f.deuda || 0) + montoSinSalida;
-      syncAsistenciaRecord(f.ci, { multaBob: (f.multaBob || 0) + montoSinSalida, sinSalida: true });
+      f.multaBob = (f.multaBob || 0) + MULTA_SIN_SALIDA;
+      f.deuda = (f.deuda || 0) + MULTA_SIN_SALIDA;
+      syncAsistenciaRecord(f.ci, { multaBob: (f.multaBob || 0) + MULTA_SIN_SALIDA });
       sinSalida++;
     }
   });
@@ -1001,7 +913,7 @@ function concluirEnsayo() {
   saveFraternos(fraternos);
   renderAdminData();
 
-  showToast('Ensayo Concluido', `Faltas: ${faltantes} (Bs ${montoFalta}) | Sin Marcado de Salida: ${sinSalida} (Bs ${montoSinSalida}).`, 'warning', 6000);
+  showToast('Ensayo Concluido', `Faltas: ${faltantes} (Bs 50) | Sin Marcado de Salida: ${sinSalida} (Bs 30).`, 'warning', 6000);
 }
 
 function otorgarLicencia(ci, motivo) {
@@ -1201,15 +1113,13 @@ function exportarLogisticaTallas() {
   const sorted = [...fraternos].sort((a, b) => (a.bloque || '').localeCompare(b.bloque || ''));
 
   let csvContent = "data:text/csv;charset=utf-8,\uFEFF";
-  csvContent += "Bloque de Baile;Tipo de Fraterno;Origen / Pais;Carnet de Identidad;Nombre Completo del Fraterno;Talla de Polera;Talla de Chamarra;Talla de Canguro;Telefono Celular\n";
+  csvContent += "Bloque de Baile;Tipo de Fraterno;Carnet de Identidad;Nombre Completo del Fraterno;Talla de Polera;Talla de Chamarra;Talla de Canguro;Telefono Celular\n";
 
   sorted.forEach(f => {
     const tallas = f.tallas || {};
-    const origenStr = (f.origen === 'Extranjero' && f.pais_origen) ? `${f.pais_origen} (Extranjero)` : (f.origen || 'Bolivia');
     const row = [
       `"${f.bloque || ''}"`,
       f.categoria || calcularCategoria(f.anioIngreso),
-      `"${origenStr}"`,
       f.ci || '',
       `"${f.nombre || ''}"`,
       tallas.polera || '-',
@@ -1261,7 +1171,7 @@ function exportarCSV() {
   const encodedUri = encodeURI(csvContent);
   const link = document.createElement("a");
   link.setAttribute("href", encodedUri);
-  link.setAttribute("download", `asistencia_bloque_illimani_${new Date().toISOString().slice(0,10)}.csv`);
+  link.setAttribute("download", `asistencia_bloque_illimani_${new Date().toISOString().slice(0, 10)}.csv`);
   document.body.appendChild(link);
   link.click();
   document.body.removeChild(link);
@@ -1344,7 +1254,7 @@ function renderTablaEnsayosProgramados() {
 
   const ensayos = AppState.ensayos || [];
   if (ensayos.length === 0) {
-    tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; color: var(--text-muted); padding: 1.5rem;">No hay días de ensayo general programados.</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; color: var(--text-muted); padding: 1rem;">No hay días de ensayo general programados.</td></tr>`;
     return;
   }
 
@@ -1357,7 +1267,7 @@ function renderTablaEnsayosProgramados() {
 
     if (e.cerrado) {
       badgeClass = 'badge-danger';
-      estadoLabel = '🔴 Concluido';
+      estadoLabel = '🔴 Ensayo Concluido';
     } else if (estadoMarcado === 'SALIDA') {
       badgeClass = 'badge-primary';
       estadoLabel = '🔵 Salida Habilitada';
@@ -1365,82 +1275,28 @@ function renderTablaEnsayosProgramados() {
 
     return `
       <tr style="${isActive ? 'background: rgba(255, 215, 0, 0.06); border-left: 3px solid var(--color-gold);' : ''}">
+        <td><strong>${e.fecha}</strong> ${isActive ? '<span class="badge badge-gold" style="font-size:0.7rem; margin-left:0.3rem;">ACTIVO</span>' : ''}</td>
+        <td>${e.desc}</td>
+        <td>${e.horaInicio || '10:30'} AM</td>
+        <td><span class="badge ${badgeClass}">${estadoLabel}</span></td>
         <td>
-          <input type="date" id="ensayo_fecha_${e.id}" class="form-control" value="${e.fecha}" style="padding: 0.35rem 0.5rem; font-size: 0.85rem; background: var(--bg-card); color: var(--color-white); min-width: 135px;" required>
-          ${isActive ? '<span class="badge badge-gold" style="font-size:0.65rem; margin-top:0.3rem; display:inline-block;">DÍA ACTIVO</span>' : ''}
-        </td>
-        <td>
-          <input type="text" id="ensayo_desc_${e.id}" class="form-control" value="${e.desc}" placeholder="Lugar o descripción del ensayo..." style="padding: 0.35rem 0.6rem; font-size: 0.85rem; background: var(--bg-card); color: var(--color-white); min-width: 200px;" required>
-        </td>
-        <td>
-          <input type="time" id="ensayo_hora_${e.id}" class="form-control" value="${e.horaInicio || '10:30'}" style="padding: 0.35rem 0.5rem; font-size: 0.85rem; background: var(--bg-card); color: var(--color-white); width: 105px;" required>
-        </td>
-        <td>
-          <span class="badge ${badgeClass}" style="font-size: 0.75rem; white-space: nowrap;">${estadoLabel}</span>
-        </td>
-        <td>
-          <div style="display: flex; gap: 0.4rem; flex-wrap: wrap; align-items: center;">
-            <button class="btn btn-gold" style="padding: 0.35rem 0.65rem; font-size: 0.78rem; font-weight: 700;" onclick="guardarEdicionEnsayo('${e.id}')" title="Guardar y actualizar fecha, lugar y horario">
-              <i class="fa-solid fa-floppy-disk"></i> Guardar
-            </button>
+          <div style="display: flex; gap: 0.4rem; flex-wrap: wrap;">
             ${!isActive ? `
-              <button class="btn btn-outline" style="padding: 0.35rem 0.6rem; font-size: 0.75rem;" onclick="seleccionarEnsayoActivo('${e.id}')" title="Activar este día para escaneo">
-                <i class="fa-solid fa-calendar-check"></i> Activar
+              <button class="btn btn-outline" style="padding: 0.25rem 0.6rem; font-size: 0.75rem;" onclick="seleccionarEnsayoActivo('${e.id}')">
+                <i class="fa-solid fa-calendar-check"></i> Activar Día
               </button>
             ` : ''}
-            <button class="btn btn-gold" style="padding: 0.35rem 0.6rem; font-size: 0.75rem; background: #198754; border-color: #198754; color: #fff;" onclick="setModoMarcadoEnsayo('${e.id}', 'ENTRADA')" title="Habilitar marcados de ingreso">
-              <i class="fa-solid fa-right-to-bracket"></i> Ingreso
+            <button class="btn btn-gold" style="padding: 0.25rem 0.6rem; font-size: 0.75rem; background: #198754; border-color: #198754; color: #fff;" onclick="setModoMarcadoEnsayo('${e.id}', 'ENTRADA')">
+              <i class="fa-solid fa-right-to-bracket"></i> Habilitar Ingreso
             </button>
-            <button class="btn btn-gold" style="padding: 0.35rem 0.6rem; font-size: 0.75rem; background: #0D6EFD; border-color: #0D6EFD; color: #fff;" onclick="setModoMarcadoEnsayo('${e.id}', 'SALIDA')" title="Habilitar marcados de salida">
-              <i class="fa-solid fa-right-from-bracket"></i> Salida
-            </button>
-            <button class="btn btn-danger" style="padding: 0.35rem 0.55rem; font-size: 0.75rem;" onclick="eliminarEnsayo('${e.id}')" title="Eliminar este ensayo">
-              <i class="fa-solid fa-trash"></i>
+            <button class="btn btn-gold" style="padding: 0.25rem 0.6rem; font-size: 0.75rem; background: #0D6EFD; border-color: #0D6EFD; color: #fff;" onclick="setModoMarcadoEnsayo('${e.id}', 'SALIDA')">
+              <i class="fa-solid fa-right-from-bracket"></i> Habilitar Salida
             </button>
           </div>
         </td>
       </tr>
     `;
   }).join('');
-}
-
-function guardarEdicionEnsayo(id) {
-  const ens = (AppState.ensayos || []).find(e => e.id === id);
-  if (!ens) return;
-
-  const fechaEl = document.getElementById(`ensayo_fecha_${id}`);
-  const descEl = document.getElementById(`ensayo_desc_${id}`);
-  const horaEl = document.getElementById(`ensayo_hora_${id}`);
-
-  if (!fechaEl || !descEl) return;
-
-  const newFecha = fechaEl.value.trim();
-  const newDesc = descEl.value.trim();
-  const newHora = horaEl ? horaEl.value : (ens.horaInicio || '10:30');
-
-  if (!newFecha || !newDesc) {
-    showToast('Campos Incompletos', 'La fecha y el lugar/descripción son obligatorios.', 'error');
-    return;
-  }
-
-  ens.fecha = newFecha;
-  ens.desc = newDesc;
-  ens.horaInicio = newHora;
-
-  saveState();
-  renderAdminData();
-  showToast('Ensayo Actualizado', `Se guardaron los cambios para '${newDesc}' (${newFecha}).`, 'success', 3500);
-}
-
-function eliminarEnsayo(id) {
-  if (!confirm('¿Está seguro de eliminar este ensayo general programado?')) return;
-  AppState.ensayos = (AppState.ensayos || []).filter(e => e.id !== id);
-  if (AppState.ensayoActivoId === id) {
-    AppState.ensayoActivoId = AppState.ensayos.length > 0 ? AppState.ensayos[0].id : null;
-  }
-  saveState();
-  renderAdminData();
-  showToast('Ensayo Eliminado', 'El ensayo fue eliminado del cronograma.', 'warning');
 }
 
 function seleccionarEnsayoActivo(ensayoId) {
@@ -1507,10 +1363,7 @@ function renderEnsayosSelector() {
   const activeEnsayo = ensayos.find(e => e.id === AppState.ensayoActivoId);
   if (activeEnsayo) {
     if (detailsEl) {
-      const mRetraso = getMontoMulta('retraso');
-      const mFalta = getMontoMulta('falta');
-      const mSinSalida = getMontoMulta('sinSalida');
-      detailsEl.innerHTML = `Ensayo: <strong>${activeEnsayo.desc}</strong> | Fecha: <strong>${activeEnsayo.fecha}</strong> | Hora Inicio: <strong>${activeEnsayo.horaInicio || '10:30'} AM</strong> | Tolerancia: <strong>${activeEnsayo.horaTolerancia || 10} Min</strong> | Multas: Retraso <strong>Bs ${mRetraso}</strong> • Falta <strong>Bs ${mFalta}</strong> • Sin Salida <strong>Bs ${mSinSalida}</strong>`;
+      detailsEl.innerHTML = `Ensayo: <strong>${activeEnsayo.desc}</strong> | Fecha: <strong>${activeEnsayo.fecha}</strong> | Hora Inicio: <strong>${activeEnsayo.horaInicio || '10:30'} AM</strong> | Tolerancia: <strong>${activeEnsayo.horaTolerancia || 10} Min</strong> | Multa Atraso: <strong>Bs 30</strong> | Falta: <strong>Bs 50</strong>`;
     }
     if (badgeStatus) {
       const modeLabel = activeEnsayo.estadoMarcado === 'SALIDA' ? 'Salida Habilitada' : 'Ingreso Habilitado';
@@ -1626,7 +1479,7 @@ function openModalPagoManual(prefillCI = '', defaultTipo = 'CUOTA') {
   if (groupCuotaSel) groupCuotaSel.style.display = defaultTipo === 'CUOTA' ? 'block' : 'none';
 
   if (dateInput && !dateInput.value) {
-    dateInput.value = new Date().toISOString().slice(0,10);
+    dateInput.value = new Date().toISOString().slice(0, 10);
   }
 
   modal.classList.add('active');
@@ -1714,75 +1567,18 @@ function renderTablaCuotasProgramadas() {
 
     return `
       <tr>
+        <td><strong>${h.nombre}</strong></td>
+        <td><i class="fa-solid fa-calendar-day" style="color: var(--color-gold);"></i> ${h.fechaLimite}</td>
+        <td><strong style="color: #2ECC71; font-size: 1.05rem;">Bs ${h.monto}</strong></td>
+        <td><span class="badge badge-gold">${alDiaCount} de ${fraternos.length} Fraternos Al Día</span></td>
         <td>
-          <input type="text" id="cuota_nombre_${h.id}" class="form-control" value="${h.nombre}" placeholder="Nombre o concepto de la cuota..." style="padding: 0.35rem 0.6rem; font-size: 0.85rem; background: var(--bg-card); color: var(--color-white); min-width: 190px;" required>
-        </td>
-        <td>
-          <input type="date" id="cuota_fecha_${h.id}" class="form-control" value="${h.fechaLimite}" style="padding: 0.35rem 0.5rem; font-size: 0.85rem; background: var(--bg-card); color: var(--color-white); min-width: 135px;" required>
-        </td>
-        <td>
-          <div style="display: flex; align-items: center; gap: 0.3rem;">
-            <span style="font-weight: 700; color: var(--color-gold); font-size: 0.85rem;">Bs</span>
-            <input type="number" id="cuota_monto_${h.id}" class="form-control" value="${h.monto}" min="1" step="1" style="padding: 0.35rem 0.5rem; font-size: 0.95rem; font-weight: 800; background: var(--bg-card); color: #2ECC71; width: 100px;" required>
-          </div>
-        </td>
-        <td>
-          <span class="badge ${alDiaCount === fraternos.length && fraternos.length > 0 ? 'badge-puntual' : 'badge-gold'}" style="font-size: 0.75rem; white-space: nowrap;">
-            ${alDiaCount} de ${fraternos.length} al Día
-          </span>
-        </td>
-        <td>
-          <div style="display: flex; gap: 0.4rem; flex-wrap: wrap; align-items: center;">
-            <button class="btn btn-gold" style="padding: 0.35rem 0.65rem; font-size: 0.78rem; font-weight: 700;" onclick="guardarEdicionCuota('${h.id}')" title="Guardar cambios de nombre, fecha y monto">
-              <i class="fa-solid fa-floppy-disk"></i> Guardar
-            </button>
-            <button class="btn btn-outline" style="padding: 0.35rem 0.6rem; font-size: 0.75rem;" onclick="openModalPagoManual('', 'CUOTA')" title="Cobrar cuota a un fraterno">
-              <i class="fa-solid fa-hand-holding-dollar"></i> Cobrar
-            </button>
-            <button class="btn btn-danger" style="padding: 0.35rem 0.55rem; font-size: 0.75rem;" onclick="eliminarCuota('${h.id}')" title="Eliminar cuota">
-              <i class="fa-solid fa-trash"></i>
-            </button>
-          </div>
+          <button class="btn btn-outline" style="padding: 0.3rem 0.7rem; font-size: 0.8rem;" onclick="openModalPagoManual('', 'CUOTA')">
+            <i class="fa-solid fa-hand-holding-dollar"></i> Cobrar Cuota
+          </button>
         </td>
       </tr>
     `;
   }).join('');
-}
-
-function guardarEdicionCuota(id) {
-  const cuota = (AppState.hitosCuotas || []).find(c => c.id === id);
-  if (!cuota) return;
-
-  const nombreEl = document.getElementById(`cuota_nombre_${id}`);
-  const fechaEl = document.getElementById(`cuota_fecha_${id}`);
-  const montoEl = document.getElementById(`cuota_monto_${id}`);
-
-  if (!nombreEl || !fechaEl || !montoEl) return;
-
-  const newNombre = nombreEl.value.trim();
-  const newFecha = fechaEl.value.trim();
-  const newMonto = parseFloat(montoEl.value) || 0;
-
-  if (!newNombre || !newFecha || newMonto <= 0) {
-    showToast('Campos Inválidos', 'Verifique que el nombre, fecha y monto en Bs sean válidos.', 'error');
-    return;
-  }
-
-  cuota.nombre = newNombre;
-  cuota.fechaLimite = newFecha;
-  cuota.monto = newMonto;
-
-  saveState();
-  renderAdminData();
-  showToast('Cuota Actualizada', `Se actualizó la cuota '${newNombre}' a Bs ${newMonto} (${newFecha}).`, 'success', 3500);
-}
-
-function eliminarCuota(id) {
-  if (!confirm('¿Está seguro de eliminar esta cuota programada?')) return;
-  AppState.hitosCuotas = (AppState.hitosCuotas || []).filter(c => c.id !== id);
-  saveState();
-  renderAdminData();
-  showToast('Cuota Eliminada', 'La cuota fue eliminada del cronograma financiero.', 'warning');
 }
 
 function renderRegistroMultasTable() {
@@ -1829,7 +1625,7 @@ function renderRegistroCuotasTable() {
 
   tbody.innerHTML = fraternos.map(f => {
     const pagosApproved = (f.pagos || []).filter(p => p.status === 'aprobado');
-    
+
     let cuotasCanceladasCount = 0;
     hitos.forEach(h => {
       const pagado = pagosApproved.some(p => p.hitoId === h.id || (p.tipo === 'CUOTA' && p.concepto && p.concepto.toLowerCase().includes(h.nombre.toLowerCase())));
@@ -1855,155 +1651,6 @@ function renderRegistroCuotasTable() {
       </tr>
     `;
   }).join('');
-}
-
-function renderDesgloseMultasFraterno(dancer) {
-  const container = document.getElementById('contenedorDesgloseMultasFraterno');
-  const summaryBadge = document.getElementById('userMultasSummary');
-  if (!container) return;
-
-  const ensayos = AppState.ensayos || [];
-  const asistencias = AppState.asistencias || {};
-  const montoRetraso = getMontoMulta('retraso');
-  const montoFalta = getMontoMulta('falta');
-  const montoSinSalida = getMontoMulta('sinSalida');
-
-  // Obtener pagos aprobados destinados a multas
-  const pagosApproved = (dancer.pagos || []).filter(p => p.status === 'aprobado');
-  const totalMultasAbonadas = pagosApproved
-    .filter(p => p.tipo === 'MULTA' || (!p.tipo && !p.hitoId))
-    .reduce((sum, p) => sum + (p.monto || 0), 0);
-
-  // Recolectar lista de multas generadas por fecha de ensayo
-  const multasLista = [];
-
-  ensayos.forEach(ens => {
-    const rec = (asistencias[ens.id] && asistencias[ens.id][dancer.ci]) ? asistencias[ens.id][dancer.ci] : null;
-
-    const estadoAsist = rec ? rec.estadoAsistencia : (ens.id === AppState.ensayoActivoId ? dancer.estadoAsistencia : null);
-    const horaEntrada = rec ? rec.horaEntrada : (ens.id === AppState.ensayoActivoId ? dancer.horaEntrada : null);
-    const horaSalida = rec ? rec.horaSalida : (ens.id === AppState.ensayoActivoId ? dancer.horaSalida : null);
-    const sinSalidaFlag = rec ? (rec.sinSalida || (horaEntrada && !horaSalida && ens.cerrado)) : (horaEntrada && !horaSalida && ens.cerrado);
-
-    if (estadoAsist === 'Licencia Justificada') {
-      return; // Licencia anula multa
-    }
-
-    // 1. Multa por Retraso
-    if (estadoAsist === 'Atraso') {
-      multasLista.push({
-        ensayoId: ens.id,
-        fecha: ens.fecha,
-        desc: ens.desc,
-        motivo: 'Retraso',
-        icono: 'fa-solid fa-clock',
-        colorMotivo: '#E67E22',
-        monto: montoRetraso
-      });
-    } else if (estadoAsist === 'Falta' || (ens.cerrado && !horaEntrada)) {
-      // 2. Multa por Falta
-      multasLista.push({
-        ensayoId: ens.id,
-        fecha: ens.fecha,
-        desc: ens.desc,
-        motivo: 'Falta',
-        icono: 'fa-solid fa-user-xmark',
-        colorMotivo: '#FF6B6B',
-        monto: montoFalta
-      });
-    }
-
-    // 3. Multa por No Marcar Salida
-    if (sinSalidaFlag) {
-      multasLista.push({
-        ensayoId: ens.id,
-        fecha: ens.fecha,
-        desc: ens.desc,
-        motivo: 'No marcar salida',
-        icono: 'fa-solid fa-right-from-bracket',
-        colorMotivo: '#3498DB',
-        monto: montoSinSalida
-      });
-    }
-  });
-
-  // Ordenar cronológicamente por fecha de ensayo
-  multasLista.sort((a, b) => (a.fecha || '').localeCompare(b.fecha || ''));
-
-  if (multasLista.length === 0) {
-    container.innerHTML = `
-      <div style="text-align: center; color: var(--text-muted); padding: 1.5rem; background: rgba(255,255,255,0.02); border-radius: 12px; border: 1px dashed var(--border-glass);">
-        <i class="fa-solid fa-shield-heart" style="font-size: 2.2rem; color: #2ECC71; margin-bottom: 0.6rem; display: block;"></i>
-        <strong style="color: #2ECC71; font-size: 1rem;">¡Sin multas registradas!</strong>
-        <p style="margin: 0.3rem 0 0; font-size: 0.85rem;">Su historial de asistencia se encuentra al día y no registra sanciones de ensayo pendientes.</p>
-      </div>
-    `;
-    if (summaryBadge) {
-      summaryBadge.textContent = '0 Multas';
-      summaryBadge.style.color = '#2ECC71';
-    }
-    return;
-  }
-
-  // Evaluar estado: 'Cancelado' (verde) vs 'Pendiente de Pago' (rojo)
-  const deudaActual = dancer.deuda || 0;
-  const totalCostoMultas = multasLista.reduce((s, m) => s + m.monto, 0);
-  const montoPagado = Math.max(totalMultasAbonadas, Math.max(0, totalCostoMultas - deudaActual));
-  let fondoCobro = (deudaActual === 0) ? Infinity : montoPagado;
-  let pendientesCount = 0;
-
-  container.innerHTML = multasLista.map(multa => {
-    let cancelado = false;
-    if (fondoCobro >= multa.monto) {
-      cancelado = true;
-      fondoCobro -= multa.monto;
-    } else {
-      cancelado = false;
-      pendientesCount++;
-    }
-
-    const badgeEstado = cancelado
-      ? `<span class="badge" style="background: rgba(46, 204, 113, 0.15); color: #2ECC71; border: 1px solid #2ECC71; padding: 0.45rem 0.9rem; font-size: 0.82rem; font-weight: 800; white-space: nowrap;">
-           <i class="fa-solid fa-circle-check"></i> Cancelado
-         </span>`
-      : `<span class="badge" style="background: rgba(218, 41, 28, 0.15); color: #FF6B6B; border: 1px solid #DA291C; padding: 0.45rem 0.9rem; font-size: 0.82rem; font-weight: 800; white-space: nowrap;">
-           <i class="fa-solid fa-circle-exclamation"></i> Pendiente de Pago
-         </span>`;
-
-    return `
-      <div style="background: rgba(255,255,255,0.03); border: 1px solid var(--border-glass); border-radius: 12px; padding: 1rem 1.2rem; margin-bottom: 0.8rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.8rem;">
-        <div style="flex: 1; min-width: 240px;">
-          <div style="display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 0.35rem;">
-            <strong style="color: var(--color-white); font-size: 0.98rem;">${multa.desc}</strong>
-            <span class="badge" style="background: rgba(255,255,255,0.06); color: var(--color-gold); font-size: 0.75rem; border: 1px solid rgba(255,215,0,0.3);">
-              <i class="fa-solid fa-calendar-day"></i> ${multa.fecha}
-            </span>
-          </div>
-          <div style="display: flex; align-items: center; gap: 0.6rem; flex-wrap: wrap;">
-            <span class="badge" style="background: rgba(0,0,0,0.3); color: ${multa.colorMotivo}; border: 1px solid ${multa.colorMotivo}; font-size: 0.8rem; font-weight: 700;">
-              <i class="${multa.icono}"></i> Motivo: ${multa.motivo}
-            </span>
-            <span style="font-size: 0.85rem; color: var(--text-muted);">
-              Tarifa Fijada: <strong style="color: var(--color-white);">Bs ${multa.monto}</strong>
-            </span>
-          </div>
-        </div>
-        <div>
-          ${badgeEstado}
-        </div>
-      </div>
-    `;
-  }).join('');
-
-  if (summaryBadge) {
-    if (pendientesCount === 0) {
-      summaryBadge.textContent = `${multasLista.length} Multas (Canceladas)`;
-      summaryBadge.style.color = '#2ECC71';
-    } else {
-      summaryBadge.textContent = `${multasLista.length} Multas (${pendientesCount} Pendientes)`;
-      summaryBadge.style.color = '#FF6B6B';
-    }
-  }
 }
 
 function renderCuotasProgramadasFraterno(dancer) {
@@ -2052,17 +1699,33 @@ function renderCuotasProgramadasFraterno(dancer) {
 
 function updateProfileFinancialSummary(dancer) {
   const elMultasDebt = document.getElementById('profileMultasDebt');
+  const elCuotasDebt = document.getElementById('profileCuotasDebt');
   const elDebtDetail = document.getElementById('profileDebtDetail');
 
+  const hitos = AppState.hitosCuotas || [];
+  const totalCuotasMonto = hitos.reduce((sum, h) => sum + (h.monto || 0), 0);
+
+  const pagosApproved = (dancer.pagos || []).filter(p => p.status === 'aprobado');
+
+  const cuotasPagadasMonto = pagosApproved
+    .filter(p => p.tipo === 'CUOTA' || p.hitoId)
+    .reduce((sum, p) => sum + (p.monto || 0), 0);
+
+  const multasPagadasMonto = pagosApproved
+    .filter(p => p.tipo === 'MULTA' || (!p.tipo && !p.hitoId))
+    .reduce((sum, p) => sum + (p.monto || 0), 0);
+
   const saldoMultas = Math.max(0, (dancer.deuda || 0));
+  const saldoCuotas = Math.max(0, totalCuotasMonto - cuotasPagadasMonto);
 
   if (elMultasDebt) elMultasDebt.textContent = `Bs ${saldoMultas}`;
+  if (elCuotasDebt) elCuotasDebt.textContent = `Bs ${saldoCuotas}`;
 
   if (elDebtDetail) {
-    if (saldoMultas === 0) {
-      elDebtDetail.innerHTML = `<span style="color: #2ECC71; font-weight: 700;"><i class="fa-solid fa-circle-check"></i> ¡Felicidades! No tiene multas pendientes de asistencia.</span>`;
+    if (saldoMultas === 0 && saldoCuotas === 0) {
+      elDebtDetail.innerHTML = `<span style="color: #2ECC71; font-weight: 700;"><i class="fa-solid fa-circle-check"></i> ¡Felicidades! Su cuenta corriente se encuentra totalmente al día.</span>`;
     } else {
-      elDebtDetail.innerHTML = `Estado: Saldo pendiente de multas: <strong style="color: var(--color-secondary);">Bs ${saldoMultas}</strong>`;
+      elDebtDetail.innerHTML = `Resumen: Pendiente de Multas: <strong style="color: var(--color-secondary);">Bs ${saldoMultas}</strong> | Pendiente de Cuotas: <strong style="color: #3498DB;">Bs ${saldoCuotas}</strong>`;
     }
   }
 }
@@ -2086,19 +1749,19 @@ function renderAdminData() {
   const statRecCuotas = document.getElementById('statRecaudadoCuotas');
 
   if (statTotal) statTotal.textContent = fraternos.length;
-  
+
   const marcadosEntradaCount = fraternos.filter(f => {
     const rec = asistenciasDia[f.ci] || {};
     return rec.horaEntrada || f.horaEntrada;
   }).length;
   if (statPresentes) statPresentes.textContent = marcadosEntradaCount;
-  
+
   const totalMultas = fraternos.reduce((sum, f) => {
     const rec = asistenciasDia[f.ci] || {};
     return sum + (rec.multaBob !== undefined ? rec.multaBob : (f.multaBob || 0));
   }, 0);
   if (statMultas) statMultas.textContent = `Bs ${totalMultas}`;
-  
+
   const totalCaja = fraternos.reduce((sum, f) => {
     const pAprobados = (f.pagos || []).filter(p => p.status === 'aprobado').reduce((a, b) => a + (b.monto || 0), 0);
     return sum + pAprobados;
@@ -2132,7 +1795,7 @@ function renderAdminData() {
 
   const selectLicencia = document.getElementById('selectFraternoLicencia');
   if (selectLicencia) {
-    selectLicencia.innerHTML = '<option value="">-- Seleccionar Danzante --</option>' + 
+    selectLicencia.innerHTML = '<option value="">-- Seleccionar Danzante --</option>' +
       fraternos.map(f => `<option value="${f.ci}">${f.nombre} (${f.bloque} - CI: ${f.ci})</option>`).join('');
   }
 
@@ -2178,11 +1841,11 @@ function renderAdminData() {
           <td><strong style="color: #E67E22;">${hSalida}</strong></td>
           <td><span class="badge ${badgeClass}">${estAsist}</span></td>
           <td>
-            ${hasAlert 
-              ? `<span class="badge badge-medical" onclick="showMedicalAlertModalByCI('${f.ci}')" style="cursor: pointer;">
+            ${hasAlert
+          ? `<span class="badge badge-medical" onclick="showMedicalAlertModalByCI('${f.ci}')" style="cursor: pointer;">
                    <i class="fa-solid fa-heart-pulse"></i> ${f.ficha_medica}
                  </span>`
-              : '<span style="font-size: 0.8rem; color: var(--text-muted);">Normal</span>'}
+          : '<span style="font-size: 0.8rem; color: var(--text-muted);">Normal</span>'}
           </td>
           <td>
             <strong style="color: ${f.deuda > 0 ? 'var(--color-secondary)' : '#2ECC71'};">
@@ -2204,16 +1867,6 @@ function renderAdminData() {
   renderRegistroCuotasTable();
   renderAdmisionesTable();
   renderReceiptsInbox();
-
-  const inputRetraso = document.getElementById('cfgMultaRetraso');
-  const inputFalta = document.getElementById('cfgMultaFalta');
-  const inputSinSalida = document.getElementById('cfgMultaSinSalida');
-  if (AppState.configMultas) {
-    if (inputRetraso && document.activeElement !== inputRetraso) inputRetraso.value = AppState.configMultas.retraso ?? 30;
-    if (inputFalta && document.activeElement !== inputFalta) inputFalta.value = AppState.configMultas.falta ?? 50;
-    if (inputSinSalida && document.activeElement !== inputSinSalida) inputSinSalida.value = AppState.configMultas.sinSalida ?? 30;
-  }
-
   renderChart(fraternos);
 }
 
@@ -2221,7 +1874,7 @@ function renderChart(fraternos) {
   const canvas = document.getElementById('punctualityChart');
   if (!canvas) return;
 
-  const bloques = ['Varones', 'Cholitas', 'Jachas', 'Miskys'];
+  const bloques = ['Varones', 'Cholitas', 'Jachas', 'Miskis'];
   const activeEnsayoId = AppState.ensayoActivoId || (AppState.ensayos && AppState.ensayos[0] ? AppState.ensayos[0].id : "ENS-2026-09-20");
   const asistenciasDia = (AppState.asistencias && AppState.asistencias[activeEnsayoId]) ? AppState.asistencias[activeEnsayoId] : {};
 
@@ -2252,8 +1905,8 @@ function renderChart(fraternos) {
       labels: bloques,
       datasets: [
         { label: 'Puntuales (Bs 0)', data: puntualesData, backgroundColor: '#2ECC71' },
-        { label: `Atrasos (Bs ${getMontoMulta('retraso')})`, data: atrasosData, backgroundColor: '#E67E22' },
-        { label: `Faltas (Bs ${getMontoMulta('falta')})`, data: faltasData, backgroundColor: '#DA291C' }
+        { label: 'Atrasos (Bs 30)', data: atrasosData, backgroundColor: '#E67E22' },
+        { label: 'Faltas (Bs 50)', data: faltasData, backgroundColor: '#DA291C' }
       ]
     },
     options: {
@@ -2379,7 +2032,7 @@ function initProfilePanel() {
   const elCanguro = document.getElementById('tallaCanguro');
 
   if (elNombre) elNombre.textContent = dancer.nombre;
-  if (elBloque) elBloque.textContent = `${dancer.bloque} • Bloque Illimani`;
+  if (elBloque) elBloque.textContent = `Bloque: ${dancer.bloque}`;
   if (elCategoria) {
     elCategoria.textContent = dancer.categoria || calcularCategoria(dancer.anioIngreso);
     elCategoria.style.background = dancer.categoria === 'Antiguo' ? 'rgba(255, 215, 0, 0.2)' : 'rgba(231, 76, 60, 0.2)';
@@ -2407,10 +2060,10 @@ function initProfilePanel() {
   const inputCambiarFoto = document.getElementById('inputCambiarFotoPerfil');
   if (btnCambiarFoto && inputCambiarFoto) {
     btnCambiarFoto.addEventListener('click', () => inputCambiarFoto.click());
-    inputCambiarFoto.addEventListener('change', function() {
+    inputCambiarFoto.addEventListener('change', function () {
       if (this.files && this.files[0]) {
         const reader = new FileReader();
-        reader.onload = function(e) {
+        reader.onload = function (e) {
           const newBase64 = e.target.result;
           dancer.foto = newBase64;
           if (elFoto) elFoto.src = newBase64;
@@ -2428,118 +2081,8 @@ function initProfilePanel() {
     });
   }
 
-  const elOrigen = document.getElementById('perfilOrigen');
-  if (elOrigen) {
-    elOrigen.textContent = (dancer.origen === 'Extranjero' && dancer.pais_origen)
-      ? `${dancer.pais_origen} (Extranjero)`
-      : (dancer.origen || 'Bolivia');
-  }
-
-  // Poblar y enlazar formulario de datos del fraterno, tallas y ficha médica
-  const selTallaPolera = document.getElementById('profileTallaPolera');
-  const selTallaChamarra = document.getElementById('profileTallaChamarra');
-  const selTallaCanguro = document.getElementById('profileTallaCanguro');
-  if (selTallaPolera) selTallaPolera.value = tallas.polera || 'M';
-  if (selTallaChamarra) selTallaChamarra.value = tallas.chamarra || 'M';
-  if (selTallaCanguro) selTallaCanguro.value = tallas.canguro || 'M';
-
-  const selProfileOrigen = document.getElementById('profileOrigen');
-  const groupProfilePais = document.getElementById('groupProfilePais');
-  const inputProfilePais = document.getElementById('profilePais');
-
-  if (selProfileOrigen && groupProfilePais) {
-    selProfileOrigen.value = dancer.origen || 'Bolivia';
-    if (selProfileOrigen.value === 'Extranjero') {
-      groupProfilePais.style.display = 'block';
-      if (inputProfilePais) {
-        inputProfilePais.value = dancer.pais_origen || '';
-        inputProfilePais.required = true;
-      }
-    } else {
-      groupProfilePais.style.display = 'none';
-      if (inputProfilePais) {
-        inputProfilePais.value = '';
-        inputProfilePais.required = false;
-      }
-    }
-
-    selProfileOrigen.addEventListener('change', () => {
-      if (selProfileOrigen.value === 'Extranjero') {
-        groupProfilePais.style.display = 'block';
-        if (inputProfilePais) inputProfilePais.required = true;
-      } else {
-        groupProfilePais.style.display = 'none';
-        if (inputProfilePais) {
-          inputProfilePais.required = false;
-          inputProfilePais.value = '';
-        }
-      }
-    });
-  }
-
-  const inputPhone = document.getElementById('profilePhone');
-  const inputEmerg = document.getElementById('profileEmergencyContact');
-  const inputMed = document.getElementById('profileMedicalCondition');
-  if (inputPhone) inputPhone.value = dancer.telefono || '';
-  if (inputEmerg) inputEmerg.value = dancer.contacto_emergencia || '';
-  if (inputMed) inputMed.value = dancer.ficha_medica || '';
-
-  const formMedical = document.getElementById('formProfileMedical');
-  if (formMedical) {
-    formMedical.addEventListener('submit', function(e) {
-      e.preventDefault();
-
-      if (selTallaPolera && selTallaChamarra && selTallaCanguro) {
-        dancer.tallas = {
-          polera: selTallaPolera.value,
-          chamarra: selTallaChamarra.value,
-          canguro: selTallaCanguro.value
-        };
-        if (elPolera) elPolera.textContent = dancer.tallas.polera;
-        if (elChamarra) elChamarra.textContent = dancer.tallas.chamarra;
-        if (elCanguro) elCanguro.textContent = dancer.tallas.canguro;
-      }
-
-      if (selProfileOrigen) {
-        dancer.origen = selProfileOrigen.value;
-        dancer.pais_origen = (selProfileOrigen.value === 'Extranjero' && inputProfilePais) ? inputProfilePais.value.trim() : '';
-        if (dancer.origen === 'Extranjero' && !dancer.pais_origen) {
-          showToast('País Requerido', 'Por favor indique su país de origen.', 'error');
-          return;
-        }
-        if (elOrigen) {
-          elOrigen.textContent = (dancer.origen === 'Extranjero' && dancer.pais_origen)
-            ? `${dancer.pais_origen} (Extranjero)`
-            : dancer.origen;
-        }
-      }
-
-      dancer.telefono = inputPhone ? inputPhone.value.trim() : (dancer.telefono || '');
-      dancer.contacto_emergencia = inputEmerg ? inputEmerg.value.trim() : (dancer.contacto_emergencia || '');
-      dancer.ficha_medica = inputMed ? inputMed.value.trim() : (dancer.ficha_medica || 'Ninguna');
-
-      let fraternosList = getFraternos();
-      const idx = fraternosList.findIndex(f => f.ci === dancer.ci);
-      if (idx !== -1) {
-        fraternosList[idx].tallas = dancer.tallas;
-        fraternosList[idx].origen = dancer.origen;
-        fraternosList[idx].pais_origen = dancer.pais_origen;
-        fraternosList[idx].telefono = dancer.telefono;
-        fraternosList[idx].contacto_emergencia = dancer.contacto_emergencia;
-        fraternosList[idx].ficha_medica = dancer.ficha_medica;
-        saveFraternos(fraternosList);
-      }
-      localStorage.setItem('sambos_active_user', JSON.stringify(dancer));
-      showToast('Datos Actualizados', 'Sus datos personales, tallas y ficha médica se han guardado.', 'success');
-    });
-  }
-
-  // Inicializar navegación por 3 pestañas interactivas de Fraterno
-  initProfileTabNavigation();
-
   renderQRCodeFraterno(dancer.ci, dancer.nombre);
   renderHistorialEnsayosFraterno(dancer);
-  renderDesgloseMultasFraterno(dancer);
   renderCuotasProgramadasFraterno(dancer);
   updateProfileFinancialSummary(dancer);
 
@@ -2551,28 +2094,6 @@ function initProfilePanel() {
       window.location.href = 'index.html';
     });
   }
-}
-
-function initProfileTabNavigation() {
-  const tabBtns = document.querySelectorAll('#profileNavTabs .tab-btn');
-  const tabContents = document.querySelectorAll('#profileMainContainer .tab-content');
-
-  if (!tabBtns.length) return;
-
-  tabBtns.forEach(btn => {
-    btn.addEventListener('click', () => {
-      const targetTabId = btn.getAttribute('data-tab');
-
-      tabBtns.forEach(b => b.classList.remove('active'));
-      tabContents.forEach(c => c.classList.remove('active'));
-
-      btn.classList.add('active');
-      const targetContent = document.getElementById(targetTabId);
-      if (targetContent) {
-        targetContent.classList.add('active');
-      }
-    });
-  });
 }
 
 function renderQRCodeFraterno(ci, nombre = '') {
@@ -2592,7 +2113,7 @@ function renderQRCodeFraterno(ci, nombre = '') {
         colorLight: "#ffffff",
         correctLevel: QRCode.CorrectLevel.H
       });
-    } catch(err) {
+    } catch (err) {
       renderQRImageFallback(qrContainer, ciText);
     }
   } else {
