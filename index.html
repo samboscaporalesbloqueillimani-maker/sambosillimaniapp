@@ -143,7 +143,7 @@
           </button>
         </div>
 
-        <!-- Tallas de Indumentaria -->
+        <!-- Tallas de Indumentaria con XS y XXL -->
         <label class="form-label" style="color: var(--color-gold); margin-top: 0.5rem; display: block;">
           <i class="fa-solid fa-shirt"></i> Tallas Oficiales de Indumentaria *
         </label>
@@ -151,31 +151,53 @@
           <div class="form-group">
             <label class="form-label" for="regTallaPolera">Talla Polera</label>
             <select id="regTallaPolera" class="form-control" required>
+              <option value="XS">XS</option>
               <option value="S">S</option>
               <option value="M" selected>M</option>
               <option value="L">L</option>
               <option value="XL">XL</option>
+              <option value="XXL">XXL</option>
             </select>
           </div>
 
           <div class="form-group">
             <label class="form-label" for="regTallaChamarra">Talla Chamarra</label>
             <select id="regTallaChamarra" class="form-control" required>
+              <option value="XS">XS</option>
               <option value="S">S</option>
               <option value="M" selected>M</option>
               <option value="L">L</option>
               <option value="XL">XL</option>
+              <option value="XXL">XXL</option>
             </select>
           </div>
 
           <div class="form-group">
             <label class="form-label" for="regTallaCanguro">Talla Canguro</label>
             <select id="regTallaCanguro" class="form-control" required>
+              <option value="XS">XS</option>
               <option value="S">S</option>
               <option value="M" selected>M</option>
               <option value="L">L</option>
               <option value="XL">XL</option>
+              <option value="XXL">XXL</option>
             </select>
+          </div>
+        </div>
+
+        <!-- Campo Obligatorio de Origen (Bolivia / Extranjero) -->
+        <div class="grid-2">
+          <div class="form-group">
+            <label class="form-label" for="regOrigen"><i class="fa-solid fa-earth-americas"></i> Origen del Fraterno *</label>
+            <select id="regOrigen" class="form-control" required>
+              <option value="Bolivia" selected>Bolivia</option>
+              <option value="Extranjero">Extranjero</option>
+            </select>
+          </div>
+
+          <div class="form-group" id="groupRegPaisOrigen" style="display: none;">
+            <label class="form-label" for="regPaisOrigen"><i class="fa-solid fa-flag"></i> ¿De qué país es? *</label>
+            <input type="text" id="regPaisOrigen" class="form-control" placeholder="Ej: Perú, Chile, etc.">
           </div>
         </div>
 

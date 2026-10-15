@@ -402,6 +402,60 @@
         </div>
       </div>
 
+      <!-- CONFIGURACIÓN DE MULTAS POR EL ADMINISTRADOR -->
+      <div class="card" style="margin-bottom: 1.5rem; border: 1px solid var(--color-gold); background: rgba(255, 215, 0, 0.03);">
+        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.8rem; margin-bottom: 1rem;">
+          <div>
+            <h3 style="color: var(--color-gold); font-size: 1.15rem; font-weight: 700; margin-bottom: 0.2rem;">
+              <i class="fa-solid fa-sliders"></i> Configuración Oficial de Multas por Ensayo (BOB)
+            </h3>
+            <p style="font-size: 0.85rem; color: var(--text-muted); margin: 0;">
+              Configure libremente los montos en bolivianos (BOB) para las tres sanciones reglamentarias. Los cambios se guardan y aplican automáticamente.
+            </p>
+          </div>
+          <button type="button" class="btn btn-gold" id="btnGuardarConfigMultas" style="font-weight: 700; padding: 0.5rem 1.2rem;">
+            <i class="fa-solid fa-floppy-disk"></i> Guardar Tarifas de Multas
+          </button>
+        </div>
+
+        <form id="formConfigMultas">
+          <div class="grid-3" style="gap: 1rem;">
+            <div class="form-group" style="margin-bottom: 0; background: rgba(230, 126, 34, 0.08); border: 1px solid rgba(230, 126, 34, 0.3); border-radius: 12px; padding: 1rem;">
+              <label class="form-label" for="cfgMultaRetraso" style="color: #E67E22; font-weight: 700;">
+                <i class="fa-solid fa-clock"></i> 1. Multa por Retraso (Bs) *
+              </label>
+              <div style="display: flex; align-items: center; gap: 0.4rem;">
+                <span style="font-weight: 800; color: #E67E22; font-size: 1.1rem;">Bs</span>
+                <input type="number" id="cfgMultaRetraso" class="form-control" min="0" step="1" value="30" required style="font-size: 1.25rem; font-weight: 800; color: #FFFFFF; background: var(--bg-card);">
+              </div>
+              <span style="font-size: 0.75rem; color: var(--text-muted); display: block; margin-top: 0.3rem;">Aplica al ingresar fuera del horario de tolerancia</span>
+            </div>
+
+            <div class="form-group" style="margin-bottom: 0; background: rgba(218, 41, 28, 0.08); border: 1px solid rgba(218, 41, 28, 0.3); border-radius: 12px; padding: 1rem;">
+              <label class="form-label" for="cfgMultaFalta" style="color: #FF6B6B; font-weight: 700;">
+                <i class="fa-solid fa-user-xmark"></i> 2. Multa por Falta / Inasistencia (Bs) *
+              </label>
+              <div style="display: flex; align-items: center; gap: 0.4rem;">
+                <span style="font-weight: 800; color: #FF6B6B; font-size: 1.1rem;">Bs</span>
+                <input type="number" id="cfgMultaFalta" class="form-control" min="0" step="1" value="50" required style="font-size: 1.25rem; font-weight: 800; color: #FFFFFF; background: var(--bg-card);">
+              </div>
+              <span style="font-size: 0.75rem; color: var(--text-muted); display: block; margin-top: 0.3rem;">Aplica si el fraterno no asiste al ensayo</span>
+            </div>
+
+            <div class="form-group" style="margin-bottom: 0; background: rgba(13, 110, 253, 0.08); border: 1px solid rgba(13, 110, 253, 0.3); border-radius: 12px; padding: 1rem;">
+              <label class="form-label" for="cfgMultaSinSalida" style="color: #3498DB; font-weight: 700;">
+                <i class="fa-solid fa-right-from-bracket"></i> 3. Multa por No Marcar Salida (Bs) *
+              </label>
+              <div style="display: flex; align-items: center; gap: 0.4rem;">
+                <span style="font-weight: 800; color: #3498DB; font-size: 1.1rem;">Bs</span>
+                <input type="number" id="cfgMultaSinSalida" class="form-control" min="0" step="1" value="30" required style="font-size: 1.25rem; font-weight: 800; color: #FFFFFF; background: var(--bg-card);">
+              </div>
+              <span style="font-size: 0.75rem; color: var(--text-muted); display: block; margin-top: 0.3rem;">Aplica si marca entrada pero no registra salida</span>
+            </div>
+          </div>
+        </form>
+      </div>
+
       <!-- REGISTRO 1: CONTROL Y HISTORIAL DE MULTAS POR ASISTENCIA -->
       <div class="card" style="margin-bottom: 1.5rem; border-left: 5px solid var(--color-secondary);">
         <div class="card-title" style="color: #FF6B6B;">

@@ -116,7 +116,7 @@
           <i class="fa-solid fa-address-card"></i> Datos Personales y Membresía
         </div>
 
-        <div class="grid-2" style="margin-bottom: 1rem;">
+        <div class="grid-3" style="margin-bottom: 1rem;">
           <div style="background: rgba(255,255,255,0.03); border: 1px solid var(--border-glass); border-radius: 12px; padding: 0.85rem 1rem;">
             <div style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase;">Fecha de Nacimiento</div>
             <div style="font-size: 1.05rem; font-weight: 700; color: var(--color-white);" id="perfilFecha">--/--/----</div>
@@ -125,6 +125,11 @@
           <div style="background: rgba(255,255,255,0.03); border: 1px solid var(--border-glass); border-radius: 12px; padding: 0.85rem 1rem;">
             <div style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase;">Año de Ingreso</div>
             <div style="font-size: 1.05rem; font-weight: 700; color: var(--color-gold);" id="perfilAnio">20--</div>
+          </div>
+
+          <div style="background: rgba(255,255,255,0.03); border: 1px solid var(--border-glass); border-radius: 12px; padding: 0.85rem 1rem;">
+            <div style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase;">Origen / País</div>
+            <div style="font-size: 1.05rem; font-weight: 700; color: #3498DB;" id="perfilOrigen">Bolivia</div>
           </div>
         </div>
 
@@ -149,30 +154,89 @@
           </div>
         </div>
 
-        <!-- Ficha Médica y Contacto de Emergencia -->
+        <!-- Actualización de Datos, Tallas y Contactos del Fraterno -->
         <div style="border-top: 1px solid var(--border-glass); padding-top: 1rem;">
           <div style="font-size: 0.8rem; color: var(--color-gold); font-weight: 700; text-transform: uppercase; margin-bottom: 0.8rem;">
-            <i class="fa-solid fa-notes-medical"></i> Contactos de Emergencia y Ficha Médica
+            <i class="fa-solid fa-user-pen"></i> Actualizar Datos del Fraterno, Tallas y Contactos
           </div>
           <form id="formProfileMedical">
+            <!-- Selector de Tallas Oficiales con XS y XXL -->
+            <label class="form-label" style="font-size: 0.8rem; color: var(--color-gold); font-weight: 700; margin-bottom: 0.4rem; display: block;">
+              <i class="fa-solid fa-shirt"></i> Tallas Oficiales de Indumentaria *
+            </label>
+            <div class="grid-3" style="margin-bottom: 0.8rem;">
+              <div class="form-group" style="margin-bottom: 0;">
+                <label class="form-label" for="profileTallaPolera" style="font-size: 0.75rem;">Polera *</label>
+                <select id="profileTallaPolera" class="form-control" required style="font-size: 0.85rem; padding: 0.45rem;">
+                  <option value="XS">XS</option>
+                  <option value="S">S</option>
+                  <option value="M" selected>M</option>
+                  <option value="L">L</option>
+                  <option value="XL">XL</option>
+                  <option value="XXL">XXL</option>
+                </select>
+              </div>
+              <div class="form-group" style="margin-bottom: 0;">
+                <label class="form-label" for="profileTallaChamarra" style="font-size: 0.75rem;">Chamarra *</label>
+                <select id="profileTallaChamarra" class="form-control" required style="font-size: 0.85rem; padding: 0.45rem;">
+                  <option value="XS">XS</option>
+                  <option value="S">S</option>
+                  <option value="M" selected>M</option>
+                  <option value="L">L</option>
+                  <option value="XL">XL</option>
+                  <option value="XXL">XXL</option>
+                </select>
+              </div>
+              <div class="form-group" style="margin-bottom: 0;">
+                <label class="form-label" for="profileTallaCanguro" style="font-size: 0.75rem;">Canguro *</label>
+                <select id="profileTallaCanguro" class="form-control" required style="font-size: 0.85rem; padding: 0.45rem;">
+                  <option value="XS">XS</option>
+                  <option value="S">S</option>
+                  <option value="M" selected>M</option>
+                  <option value="L">L</option>
+                  <option value="XL">XL</option>
+                  <option value="XXL">XXL</option>
+                </select>
+              </div>
+            </div>
+
+            <!-- Campo Obligatorio de Origen (Bolivia / Extranjero) y País Condicional -->
+            <div class="grid-2" style="margin-bottom: 0.8rem;">
+              <div class="form-group" style="margin-bottom: 0;">
+                <label class="form-label" for="profileOrigen" style="font-size: 0.8rem;">
+                  <i class="fa-solid fa-earth-americas"></i> Origen *
+                </label>
+                <select id="profileOrigen" class="form-control" required style="font-size: 0.9rem;">
+                  <option value="Bolivia" selected>Bolivia</option>
+                  <option value="Extranjero">Extranjero</option>
+                </select>
+              </div>
+              <div class="form-group" id="groupProfilePais" style="display: none; margin-bottom: 0;">
+                <label class="form-label" for="profilePais" style="font-size: 0.8rem;">
+                  <i class="fa-solid fa-flag"></i> ¿De qué país es? *
+                </label>
+                <input type="text" id="profilePais" class="form-control" placeholder="Ej: Perú, Chile, etc." style="font-size: 0.9rem;">
+              </div>
+            </div>
+
             <div class="grid-2">
               <div class="form-group" style="margin-bottom: 0.8rem;">
-                <label class="form-label" for="profilePhone" style="font-size: 0.8rem;"><i class="fa-solid fa-phone"></i> Celular / WhatsApp</label>
+                <label class="form-label" for="profilePhone" style="font-size: 0.8rem;"><i class="fa-solid fa-phone"></i> Celular / WhatsApp *</label>
                 <input type="tel" id="profilePhone" class="form-control" placeholder="Ej: 77212345" required style="font-size: 0.9rem;">
               </div>
               <div class="form-group" style="margin-bottom: 0.8rem;">
-                <label class="form-label" for="profileEmergencyContact" style="font-size: 0.8rem;"><i class="fa-solid fa-user-shield"></i> Contacto Emergencia</label>
+                <label class="form-label" for="profileEmergencyContact" style="font-size: 0.8rem;"><i class="fa-solid fa-user-shield"></i> Contacto Emergencia *</label>
                 <input type="text" id="profileEmergencyContact" class="form-control" placeholder="Ej: Mamá - 77512345" required style="font-size: 0.9rem;">
               </div>
             </div>
             <div class="form-group" style="margin-bottom: 0.8rem;">
               <label class="form-label" for="profileMedicalCondition" style="color: #FF6B6B; font-size: 0.8rem;">
-                <i class="fa-solid fa-heart-pulse"></i> Ficha Médica / Alergias
+                <i class="fa-solid fa-heart-pulse"></i> Ficha Médica / Alergias *
               </label>
               <textarea id="profileMedicalCondition" class="form-control" rows="2" placeholder="Ej: Ninguna, Asma..." required style="font-size: 0.9rem;"></textarea>
             </div>
             <button type="submit" class="btn btn-primary" style="width: 100%; font-size: 0.85rem; padding: 0.6rem;">
-              <i class="fa-solid fa-floppy-disk"></i> Guardar Datos de Contacto y Salud
+              <i class="fa-solid fa-floppy-disk"></i> Guardar Datos del Fraterno
             </button>
           </form>
         </div>
@@ -204,20 +268,32 @@
           <i class="fa-solid fa-wallet"></i> Control de Deudas Personales y Estado de Pagos
         </div>
 
-        <div class="grid-2" style="margin-bottom: 1.2rem;">
-          <div style="background: rgba(218, 41, 28, 0.1); border: 1px solid var(--color-secondary); border-radius: 12px; padding: 1rem; text-align: center;">
-            <div style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; font-weight: 700;">1. Multas por Asistencia</div>
-            <div style="font-size: 1.6rem; font-weight: 800; color: var(--color-secondary);" id="profileMultasDebt">Bs 0</div>
-          </div>
-
-          <div style="background: rgba(13, 110, 253, 0.1); border: 1px solid #0D6EFD; border-radius: 12px; padding: 1rem; text-align: center;">
-            <div style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; font-weight: 700;">2. Cuotas Programadas</div>
-            <div style="font-size: 1.6rem; font-weight: 800; color: #3498DB;" id="profileCuotasDebt">Bs 0</div>
+        <div style="margin-bottom: 1.2rem;">
+          <div style="background: rgba(218, 41, 28, 0.1); border: 1px solid var(--color-secondary); border-radius: 12px; padding: 1.2rem; text-align: center; max-width: 360px; margin: 0 auto;">
+            <div style="font-size: 0.8rem; color: var(--text-muted); text-transform: uppercase; font-weight: 700;">
+              <i class="fa-solid fa-gavel"></i> Multas por Asistencia Pendientes
+            </div>
+            <div style="font-size: 2.2rem; font-weight: 800; color: var(--color-secondary); margin-top: 0.3rem;" id="profileMultasDebt">Bs 0</div>
           </div>
         </div>
 
-        <div style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.5rem;" id="profileDebtDetail">
+        <div style="font-size: 0.85rem; color: var(--text-muted); text-align: center; margin-bottom: 0.5rem;" id="profileDebtDetail">
           Sin saldos pendientes registrados.
+        </div>
+      </div>
+
+      <!-- Desglose Detallado de Multas por Ensayo Organizadas por Fecha -->
+      <div class="card" style="border-left: 5px solid var(--color-secondary); margin-bottom: 1.5rem;">
+        <div class="card-title" style="justify-content: space-between; flex-wrap: wrap; color: #FF6B6B;">
+          <span><i class="fa-solid fa-gavel"></i> Desglose Detallado de Multas por Fecha de Ensayo</span>
+          <span style="font-size: 0.85rem; color: #FF6B6B; font-weight: 700;" id="userMultasSummary">0 Multas</span>
+        </div>
+        <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1rem;">
+          Historial de sanciones económicas por ensayo correspondiente estrictamente a los motivos reglamentarios (<strong>Retraso</strong>, <strong>Falta</strong> o <strong>No marcar salida</strong>) con tarifas oficiales fijadas por el Administrador y su estado actual:
+        </p>
+
+        <div id="contenedorDesgloseMultasFraterno">
+          <!-- Inyectado dinámicamente por app.js -->
         </div>
       </div>
 
@@ -233,33 +309,6 @@
 
         <div id="contenedorCuotasProgramadasFraterno">
           <!-- Generado dinámicamente por app.js -->
-        </div>
-      </div>
-
-      <!-- Imagen Estática Central del Código QR Oficial de la Cuenta del Bloque -->
-      <div class="card" style="border: 1px solid var(--color-gold); text-align: center;">
-        <h4 style="color: var(--color-gold); font-size: 1.15rem; font-weight: 700; margin-bottom: 0.3rem;">
-          <i class="fa-solid fa-qrcode"></i> QR Oficial de Pago (Transferencias Bancarias)
-        </h4>
-        <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1.2rem;">
-          Escanee directamente esta imagen QR desde su aplicación de banca móvil (Banco Unión, BCP, BNB, BancoSol, Tigo Money, etc.) para realizar el pago:
-        </p>
-
-        <!-- Visualización Directa de la Imagen Estática del QR de Pago -->
-        <div style="background: #FFFFFF; padding: 1rem; border-radius: 16px; display: inline-block; box-shadow: 0 10px 25px rgba(0,0,0,0.5), 0 0 0 5px rgba(255, 215, 0, 0.3); margin-bottom: 1rem;">
-          <img src="qr-pago.svg" alt="QR Oficial de Pago - Sambos Caporales Bloque Illimani" style="width: 220px; height: auto; max-width: 100%; display: block; margin: 0 auto;">
-        </div>
-
-        <!-- Datos Oficiales de Referencia -->
-        <div style="background: rgba(0,0,0,0.3); border: 1px solid var(--border-glass); border-radius: 10px; padding: 0.9rem; max-width: 440px; margin: 0 auto; text-align: left; font-size: 0.82rem; line-height: 1.5;">
-          <div><strong style="color: var(--color-gold);">Titular:</strong> Sambos Caporales Bloque Illimani</div>
-          <div><strong style="color: var(--color-gold);">Modalidad:</strong> QR Simple / Transferencia Interbancaria</div>
-          <div><strong style="color: var(--color-gold);">Moneda:</strong> Bolivianos (BOB)</div>
-          <div><strong style="color: #2ECC71;">Glosa Sugerida:</strong> Nombre Completo + CI del Fraterno</div>
-        </div>
-
-        <div style="margin-top: 0.9rem; font-size: 0.8rem; color: var(--text-muted);">
-          <i class="fa-solid fa-circle-check" style="color: #2ECC71;"></i> Al escanear y pagar, su abono es verificado y registrado en el sistema por la <strong>Encargada de Pagos (Tesorería)</strong>.
         </div>
       </div>
     </div>

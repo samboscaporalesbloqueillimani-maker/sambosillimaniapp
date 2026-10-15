@@ -10,14 +10,16 @@
 // --------------------------------------------------------------------------
 const HORA_ENSAYO_INICIO = "10:30";
 const TOLERANCIA_MINUTOS = 10;
-const MULTA_ATRASO = 30;
-const MULTA_FALTA = 50;
-const MULTA_SIN_SALIDA = 30;
 
 // Base de Datos Oficial Inicial Limpia para Producción (Sin usuarios previos)
 const OFFICIAL_INITIAL_FRATERNOS = [];
 
 let AppState = {
+  configMultas: {
+    retraso: 30,
+    falta: 50,
+    sinSalida: 30
+  },
   fraternos: [],       // Danzantes oficiales activos (Inicialmente vacío en producción)
   postulantes: [],     // Postulantes en espera de aprobación por el Administrador
   ensayos: [
@@ -40,6 +42,23 @@ let currentScanMode = 'ENTRADA';
 let isLateSimulation = false;
 let html5QrScanner = null;
 let chartInstance = null;
+
+function getMontoMulta(tipo) {
+  if (!AppState.configMultas) {
+    AppState.configMultas = { retraso: 30, falta: 50, sinSalida: 30 };
+  }
+  const key = String(tipo).toLowerCase();
+  if (key.includes('retraso') || key.includes('atraso')) {
+    return AppState.configMultas.retraso !== undefined ? Number(AppState.configMultas.retraso) : 30;
+  }
+  if (key.includes('falta') || key.includes('inasistencia')) {
+    return AppState.configMultas.falta !== undefined ? Number(AppState.configMultas.falta) : 50;
+  }
+  if (key.includes('salida')) {
+    return AppState.configMultas.sinSalida !== undefined ? Number(AppState.configMultas.sinSalida) : 30;
+  }
+  return 30;
+}
 
 function calcularCategoria(anioIngreso) {
   const anio = parseInt(anioIngreso, 10);
@@ -92,6 +111,9 @@ function initLocalStorage() {
   if (!AppState.fraternos) AppState.fraternos = [];
   if (!AppState.postulantes) AppState.postulantes = [];
   if (!AppState.finanzas) AppState.finanzas = {};
+  if (!AppState.configMultas) {
+    AppState.configMultas = { retraso: 30, falta: 50, sinSalida: 30 };
+  }
 
   if (!AppState.ensayos || !Array.isArray(AppState.ensayos) || AppState.ensayos.length === 0) {
     AppState.ensayos = [
@@ -265,6 +287,24 @@ function initWelcomeAndLogin() {
     });
   }
 
+  const regOrigen = document.getElementById('regOrigen');
+  const groupRegPais = document.getElementById('groupRegPaisOrigen');
+  const regPais = document.getElementById('regPaisOrigen');
+  if (regOrigen && groupRegPais) {
+    regOrigen.addEventListener('change', () => {
+      if (regOrigen.value === 'Extranjero') {
+        groupRegPais.style.display = 'block';
+        if (regPais) regPais.required = true;
+      } else {
+        groupRegPais.style.display = 'none';
+        if (regPais) {
+          regPais.required = false;
+          regPais.value = '';
+        }
+      }
+    });
+  }
+
   const formRegister = document.getElementById('formRegister');
   if (formRegister) {
     formRegister.addEventListener('submit', handleSelfRegistration);
@@ -402,6 +442,16 @@ function handleSelfRegistration(e) {
   const tallaCanguro = document.getElementById('regTallaCanguro').value;
   const fichaMedica = document.getElementById('regFichaMedica').value.trim();
 
+  const regOrigen = document.getElementById('regOrigen');
+  const origenVal = regOrigen ? regOrigen.value : 'Bolivia';
+  const regPais = document.getElementById('regPaisOrigen');
+  const paisOrigenVal = (origenVal === 'Extranjero' && regPais) ? regPais.value.trim() : '';
+
+  if (origenVal === 'Extranjero' && !paisOrigenVal) {
+    showToast('País Obligatorio', 'Por favor indique su país de origen.', 'error');
+    return;
+  }
+
   if (!nombre || !ci || !fechaNacimiento || !telefono || !direccion || !contactoEmergencia || !bloque || !anioIngreso || !fichaMedica) {
     showToast('Campos Incompletos', 'Por favor complete todos los campos requeridos.', 'error');
     return;
@@ -435,6 +485,8 @@ function handleSelfRegistration(e) {
       anioIngreso: anioIngreso,
       categoria: categoriaCalculada,
       direccion: direccion,
+      origen: origenVal,
+      pais_origen: paisOrigenVal,
       rol: getRoleTitle('admin'),
       roleType: 'admin',
       tallas: { polera: tallaPolera, chamarra: tallaChamarra, canguro: tallaCanguro },
@@ -476,6 +528,8 @@ function handleSelfRegistration(e) {
     anioIngreso: anioIngreso,
     categoria: categoriaCalculada,
     direccion: direccion,
+    origen: origenVal,
+    pais_origen: paisOrigenVal,
     rol: "Danzante",
     roleType: "danzante",
     tallas: { polera: tallaPolera, chamarra: tallaChamarra, canguro: tallaCanguro },
@@ -636,7 +690,8 @@ function initAdminPanel() {
     btnToggleSimTime.addEventListener('click', () => {
       isLateSimulation = !isLateSimulation;
       updateClockDisplay();
-      showToast('Simulación de Hora', isLateSimulation ? 'Hora: 10:45 AM (Atraso Bs 30)' : 'Hora: 10:35 AM (Puntual Bs 0)', isLateSimulation ? 'warning' : 'success');
+      const montoRetraso = getMontoMulta('retraso');
+      showToast('Simulación de Hora', isLateSimulation ? `Hora: 10:45 AM (Atraso Bs ${montoRetraso})` : 'Hora: 10:35 AM (Puntual Bs 0)', isLateSimulation ? 'warning' : 'success');
       btnToggleSimTime.innerHTML = isLateSimulation 
         ? '<i class="fa-solid fa-backward-step"></i> Simular Puntual (10:35 AM)'
         : '<i class="fa-solid fa-forward-step"></i> Simular Atraso (10:45 AM)';
@@ -754,7 +809,36 @@ function initAdminPanel() {
     });
   }
 
+  const btnGuardarMultas = document.getElementById('btnGuardarConfigMultas');
+  if (btnGuardarMultas) btnGuardarMultas.addEventListener('click', guardarConfigMultas);
+
+  const formMultas = document.getElementById('formConfigMultas');
+  if (formMultas) formMultas.addEventListener('submit', guardarConfigMultas);
+
   renderAdminData();
+}
+
+function guardarConfigMultas(e) {
+  if (e) e.preventDefault();
+
+  const inputRetraso = document.getElementById('cfgMultaRetraso');
+  const inputFalta = document.getElementById('cfgMultaFalta');
+  const inputSinSalida = document.getElementById('cfgMultaSinSalida');
+
+  const retrasoVal = inputRetraso ? Math.max(0, parseInt(inputRetraso.value, 10) || 0) : 30;
+  const faltaVal = inputFalta ? Math.max(0, parseInt(inputFalta.value, 10) || 0) : 50;
+  const sinSalidaVal = inputSinSalida ? Math.max(0, parseInt(inputSinSalida.value, 10) || 0) : 30;
+
+  AppState.configMultas = {
+    retraso: retrasoVal,
+    falta: faltaVal,
+    sinSalida: sinSalidaVal
+  };
+
+  saveState();
+  renderAdminData();
+
+  showToast('Tarifas Guardadas', `Multas actualizadas: Retraso Bs ${retrasoVal}, Falta Bs ${faltaVal}, Sin Salida Bs ${sinSalidaVal}.`, 'success', 4000);
 }
 
 function aplicarRestriccionesDeRol(roleType) {
@@ -864,11 +948,12 @@ function processQRScan(ci) {
       showToast('ENTRADA PUNTUAL', `[${dancer.nombre}] marcó entrada a las ${horaActual}.`, 'success');
       playBeep('success');
     } else {
+      const montoAtraso = getMontoMulta('retraso');
       dancer.estadoAsistencia = 'Atraso';
-      dancer.multaBob = MULTA_ATRASO;
-      dancer.deuda = (dancer.deuda || 0) + MULTA_ATRASO;
-      syncAsistenciaRecord(ci, { horaEntrada: horaActual, estadoAsistencia: 'Atraso', multaBob: MULTA_ATRASO });
-      showToast('ATRASO REGISTRADO', `[${dancer.nombre}] marcó a las ${horaActual}. Multa Bs 30`, 'error');
+      dancer.multaBob = montoAtraso;
+      dancer.deuda = (dancer.deuda || 0) + montoAtraso;
+      syncAsistenciaRecord(ci, { horaEntrada: horaActual, estadoAsistencia: 'Atraso', multaBob: montoAtraso });
+      showToast('ATRASO REGISTRADO', `[${dancer.nombre}] marcó a las ${horaActual}. Multa Bs ${montoAtraso}`, 'error');
       playBeep('alarm');
     }
   } else {
@@ -895,17 +980,20 @@ function concluirEnsayo() {
   const activeEnsayo = (AppState.ensayos || []).find(e => e.id === AppState.ensayoActivoId);
   if (activeEnsayo) activeEnsayo.cerrado = true;
 
+  const montoFalta = getMontoMulta('falta');
+  const montoSinSalida = getMontoMulta('sinSalida');
+
   fraternos.forEach(f => {
     if (!f.horaEntrada && f.estadoAsistencia !== 'Licencia Justificada') {
       f.estadoAsistencia = 'Falta';
-      f.multaBob = MULTA_FALTA;
-      f.deuda = (f.deuda || 0) + MULTA_FALTA;
-      syncAsistenciaRecord(f.ci, { estadoAsistencia: 'Falta', multaBob: MULTA_FALTA });
+      f.multaBob = montoFalta;
+      f.deuda = (f.deuda || 0) + montoFalta;
+      syncAsistenciaRecord(f.ci, { estadoAsistencia: 'Falta', multaBob: montoFalta });
       faltantes++;
     } else if (f.horaEntrada && !f.horaSalida && f.estadoAsistencia !== 'Licencia Justificada') {
-      f.multaBob = (f.multaBob || 0) + MULTA_SIN_SALIDA;
-      f.deuda = (f.deuda || 0) + MULTA_SIN_SALIDA;
-      syncAsistenciaRecord(f.ci, { multaBob: (f.multaBob || 0) + MULTA_SIN_SALIDA });
+      f.multaBob = (f.multaBob || 0) + montoSinSalida;
+      f.deuda = (f.deuda || 0) + montoSinSalida;
+      syncAsistenciaRecord(f.ci, { multaBob: (f.multaBob || 0) + montoSinSalida, sinSalida: true });
       sinSalida++;
     }
   });
@@ -913,7 +1001,7 @@ function concluirEnsayo() {
   saveFraternos(fraternos);
   renderAdminData();
 
-  showToast('Ensayo Concluido', `Faltas: ${faltantes} (Bs 50) | Sin Marcado de Salida: ${sinSalida} (Bs 30).`, 'warning', 6000);
+  showToast('Ensayo Concluido', `Faltas: ${faltantes} (Bs ${montoFalta}) | Sin Marcado de Salida: ${sinSalida} (Bs ${montoSinSalida}).`, 'warning', 6000);
 }
 
 function otorgarLicencia(ci, motivo) {
@@ -1113,13 +1201,15 @@ function exportarLogisticaTallas() {
   const sorted = [...fraternos].sort((a, b) => (a.bloque || '').localeCompare(b.bloque || ''));
 
   let csvContent = "data:text/csv;charset=utf-8,\uFEFF";
-  csvContent += "Bloque de Baile;Tipo de Fraterno;Carnet de Identidad;Nombre Completo del Fraterno;Talla de Polera;Talla de Chamarra;Talla de Canguro;Telefono Celular\n";
+  csvContent += "Bloque de Baile;Tipo de Fraterno;Origen / Pais;Carnet de Identidad;Nombre Completo del Fraterno;Talla de Polera;Talla de Chamarra;Talla de Canguro;Telefono Celular\n";
 
   sorted.forEach(f => {
     const tallas = f.tallas || {};
+    const origenStr = (f.origen === 'Extranjero' && f.pais_origen) ? `${f.pais_origen} (Extranjero)` : (f.origen || 'Bolivia');
     const row = [
       `"${f.bloque || ''}"`,
       f.categoria || calcularCategoria(f.anioIngreso),
+      `"${origenStr}"`,
       f.ci || '',
       `"${f.nombre || ''}"`,
       tallas.polera || '-',
@@ -1417,7 +1507,10 @@ function renderEnsayosSelector() {
   const activeEnsayo = ensayos.find(e => e.id === AppState.ensayoActivoId);
   if (activeEnsayo) {
     if (detailsEl) {
-      detailsEl.innerHTML = `Ensayo: <strong>${activeEnsayo.desc}</strong> | Fecha: <strong>${activeEnsayo.fecha}</strong> | Hora Inicio: <strong>${activeEnsayo.horaInicio || '10:30'} AM</strong> | Tolerancia: <strong>${activeEnsayo.horaTolerancia || 10} Min</strong> | Multa Atraso: <strong>Bs 30</strong> | Falta: <strong>Bs 50</strong>`;
+      const mRetraso = getMontoMulta('retraso');
+      const mFalta = getMontoMulta('falta');
+      const mSinSalida = getMontoMulta('sinSalida');
+      detailsEl.innerHTML = `Ensayo: <strong>${activeEnsayo.desc}</strong> | Fecha: <strong>${activeEnsayo.fecha}</strong> | Hora Inicio: <strong>${activeEnsayo.horaInicio || '10:30'} AM</strong> | Tolerancia: <strong>${activeEnsayo.horaTolerancia || 10} Min</strong> | Multas: Retraso <strong>Bs ${mRetraso}</strong> • Falta <strong>Bs ${mFalta}</strong> • Sin Salida <strong>Bs ${mSinSalida}</strong>`;
     }
     if (badgeStatus) {
       const modeLabel = activeEnsayo.estadoMarcado === 'SALIDA' ? 'Salida Habilitada' : 'Ingreso Habilitado';
@@ -1764,6 +1857,155 @@ function renderRegistroCuotasTable() {
   }).join('');
 }
 
+function renderDesgloseMultasFraterno(dancer) {
+  const container = document.getElementById('contenedorDesgloseMultasFraterno');
+  const summaryBadge = document.getElementById('userMultasSummary');
+  if (!container) return;
+
+  const ensayos = AppState.ensayos || [];
+  const asistencias = AppState.asistencias || {};
+  const montoRetraso = getMontoMulta('retraso');
+  const montoFalta = getMontoMulta('falta');
+  const montoSinSalida = getMontoMulta('sinSalida');
+
+  // Obtener pagos aprobados destinados a multas
+  const pagosApproved = (dancer.pagos || []).filter(p => p.status === 'aprobado');
+  const totalMultasAbonadas = pagosApproved
+    .filter(p => p.tipo === 'MULTA' || (!p.tipo && !p.hitoId))
+    .reduce((sum, p) => sum + (p.monto || 0), 0);
+
+  // Recolectar lista de multas generadas por fecha de ensayo
+  const multasLista = [];
+
+  ensayos.forEach(ens => {
+    const rec = (asistencias[ens.id] && asistencias[ens.id][dancer.ci]) ? asistencias[ens.id][dancer.ci] : null;
+
+    const estadoAsist = rec ? rec.estadoAsistencia : (ens.id === AppState.ensayoActivoId ? dancer.estadoAsistencia : null);
+    const horaEntrada = rec ? rec.horaEntrada : (ens.id === AppState.ensayoActivoId ? dancer.horaEntrada : null);
+    const horaSalida = rec ? rec.horaSalida : (ens.id === AppState.ensayoActivoId ? dancer.horaSalida : null);
+    const sinSalidaFlag = rec ? (rec.sinSalida || (horaEntrada && !horaSalida && ens.cerrado)) : (horaEntrada && !horaSalida && ens.cerrado);
+
+    if (estadoAsist === 'Licencia Justificada') {
+      return; // Licencia anula multa
+    }
+
+    // 1. Multa por Retraso
+    if (estadoAsist === 'Atraso') {
+      multasLista.push({
+        ensayoId: ens.id,
+        fecha: ens.fecha,
+        desc: ens.desc,
+        motivo: 'Retraso',
+        icono: 'fa-solid fa-clock',
+        colorMotivo: '#E67E22',
+        monto: montoRetraso
+      });
+    } else if (estadoAsist === 'Falta' || (ens.cerrado && !horaEntrada)) {
+      // 2. Multa por Falta
+      multasLista.push({
+        ensayoId: ens.id,
+        fecha: ens.fecha,
+        desc: ens.desc,
+        motivo: 'Falta',
+        icono: 'fa-solid fa-user-xmark',
+        colorMotivo: '#FF6B6B',
+        monto: montoFalta
+      });
+    }
+
+    // 3. Multa por No Marcar Salida
+    if (sinSalidaFlag) {
+      multasLista.push({
+        ensayoId: ens.id,
+        fecha: ens.fecha,
+        desc: ens.desc,
+        motivo: 'No marcar salida',
+        icono: 'fa-solid fa-right-from-bracket',
+        colorMotivo: '#3498DB',
+        monto: montoSinSalida
+      });
+    }
+  });
+
+  // Ordenar cronológicamente por fecha de ensayo
+  multasLista.sort((a, b) => (a.fecha || '').localeCompare(b.fecha || ''));
+
+  if (multasLista.length === 0) {
+    container.innerHTML = `
+      <div style="text-align: center; color: var(--text-muted); padding: 1.5rem; background: rgba(255,255,255,0.02); border-radius: 12px; border: 1px dashed var(--border-glass);">
+        <i class="fa-solid fa-shield-heart" style="font-size: 2.2rem; color: #2ECC71; margin-bottom: 0.6rem; display: block;"></i>
+        <strong style="color: #2ECC71; font-size: 1rem;">¡Sin multas registradas!</strong>
+        <p style="margin: 0.3rem 0 0; font-size: 0.85rem;">Su historial de asistencia se encuentra al día y no registra sanciones de ensayo pendientes.</p>
+      </div>
+    `;
+    if (summaryBadge) {
+      summaryBadge.textContent = '0 Multas';
+      summaryBadge.style.color = '#2ECC71';
+    }
+    return;
+  }
+
+  // Evaluar estado: 'Cancelado' (verde) vs 'Pendiente de Pago' (rojo)
+  const deudaActual = dancer.deuda || 0;
+  const totalCostoMultas = multasLista.reduce((s, m) => s + m.monto, 0);
+  const montoPagado = Math.max(totalMultasAbonadas, Math.max(0, totalCostoMultas - deudaActual));
+  let fondoCobro = (deudaActual === 0) ? Infinity : montoPagado;
+  let pendientesCount = 0;
+
+  container.innerHTML = multasLista.map(multa => {
+    let cancelado = false;
+    if (fondoCobro >= multa.monto) {
+      cancelado = true;
+      fondoCobro -= multa.monto;
+    } else {
+      cancelado = false;
+      pendientesCount++;
+    }
+
+    const badgeEstado = cancelado
+      ? `<span class="badge" style="background: rgba(46, 204, 113, 0.15); color: #2ECC71; border: 1px solid #2ECC71; padding: 0.45rem 0.9rem; font-size: 0.82rem; font-weight: 800; white-space: nowrap;">
+           <i class="fa-solid fa-circle-check"></i> Cancelado
+         </span>`
+      : `<span class="badge" style="background: rgba(218, 41, 28, 0.15); color: #FF6B6B; border: 1px solid #DA291C; padding: 0.45rem 0.9rem; font-size: 0.82rem; font-weight: 800; white-space: nowrap;">
+           <i class="fa-solid fa-circle-exclamation"></i> Pendiente de Pago
+         </span>`;
+
+    return `
+      <div style="background: rgba(255,255,255,0.03); border: 1px solid var(--border-glass); border-radius: 12px; padding: 1rem 1.2rem; margin-bottom: 0.8rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.8rem;">
+        <div style="flex: 1; min-width: 240px;">
+          <div style="display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 0.35rem;">
+            <strong style="color: var(--color-white); font-size: 0.98rem;">${multa.desc}</strong>
+            <span class="badge" style="background: rgba(255,255,255,0.06); color: var(--color-gold); font-size: 0.75rem; border: 1px solid rgba(255,215,0,0.3);">
+              <i class="fa-solid fa-calendar-day"></i> ${multa.fecha}
+            </span>
+          </div>
+          <div style="display: flex; align-items: center; gap: 0.6rem; flex-wrap: wrap;">
+            <span class="badge" style="background: rgba(0,0,0,0.3); color: ${multa.colorMotivo}; border: 1px solid ${multa.colorMotivo}; font-size: 0.8rem; font-weight: 700;">
+              <i class="${multa.icono}"></i> Motivo: ${multa.motivo}
+            </span>
+            <span style="font-size: 0.85rem; color: var(--text-muted);">
+              Tarifa Fijada: <strong style="color: var(--color-white);">Bs ${multa.monto}</strong>
+            </span>
+          </div>
+        </div>
+        <div>
+          ${badgeEstado}
+        </div>
+      </div>
+    `;
+  }).join('');
+
+  if (summaryBadge) {
+    if (pendientesCount === 0) {
+      summaryBadge.textContent = `${multasLista.length} Multas (Canceladas)`;
+      summaryBadge.style.color = '#2ECC71';
+    } else {
+      summaryBadge.textContent = `${multasLista.length} Multas (${pendientesCount} Pendientes)`;
+      summaryBadge.style.color = '#FF6B6B';
+    }
+  }
+}
+
 function renderCuotasProgramadasFraterno(dancer) {
   const container = document.getElementById('contenedorCuotasProgramadasFraterno');
   const summaryBadge = document.getElementById('userCuotasSummary');
@@ -1810,33 +2052,17 @@ function renderCuotasProgramadasFraterno(dancer) {
 
 function updateProfileFinancialSummary(dancer) {
   const elMultasDebt = document.getElementById('profileMultasDebt');
-  const elCuotasDebt = document.getElementById('profileCuotasDebt');
   const elDebtDetail = document.getElementById('profileDebtDetail');
 
-  const hitos = AppState.hitosCuotas || [];
-  const totalCuotasMonto = hitos.reduce((sum, h) => sum + (h.monto || 0), 0);
-
-  const pagosApproved = (dancer.pagos || []).filter(p => p.status === 'aprobado');
-
-  const cuotasPagadasMonto = pagosApproved
-    .filter(p => p.tipo === 'CUOTA' || p.hitoId)
-    .reduce((sum, p) => sum + (p.monto || 0), 0);
-
-  const multasPagadasMonto = pagosApproved
-    .filter(p => p.tipo === 'MULTA' || (!p.tipo && !p.hitoId))
-    .reduce((sum, p) => sum + (p.monto || 0), 0);
-
   const saldoMultas = Math.max(0, (dancer.deuda || 0));
-  const saldoCuotas = Math.max(0, totalCuotasMonto - cuotasPagadasMonto);
 
   if (elMultasDebt) elMultasDebt.textContent = `Bs ${saldoMultas}`;
-  if (elCuotasDebt) elCuotasDebt.textContent = `Bs ${saldoCuotas}`;
 
   if (elDebtDetail) {
-    if (saldoMultas === 0 && saldoCuotas === 0) {
-      elDebtDetail.innerHTML = `<span style="color: #2ECC71; font-weight: 700;"><i class="fa-solid fa-circle-check"></i> ¡Felicidades! Su cuenta corriente se encuentra totalmente al día.</span>`;
+    if (saldoMultas === 0) {
+      elDebtDetail.innerHTML = `<span style="color: #2ECC71; font-weight: 700;"><i class="fa-solid fa-circle-check"></i> ¡Felicidades! No tiene multas pendientes de asistencia.</span>`;
     } else {
-      elDebtDetail.innerHTML = `Resumen: Pendiente de Multas: <strong style="color: var(--color-secondary);">Bs ${saldoMultas}</strong> | Pendiente de Cuotas: <strong style="color: #3498DB;">Bs ${saldoCuotas}</strong>`;
+      elDebtDetail.innerHTML = `Estado: Saldo pendiente de multas: <strong style="color: var(--color-secondary);">Bs ${saldoMultas}</strong>`;
     }
   }
 }
@@ -1978,6 +2204,16 @@ function renderAdminData() {
   renderRegistroCuotasTable();
   renderAdmisionesTable();
   renderReceiptsInbox();
+
+  const inputRetraso = document.getElementById('cfgMultaRetraso');
+  const inputFalta = document.getElementById('cfgMultaFalta');
+  const inputSinSalida = document.getElementById('cfgMultaSinSalida');
+  if (AppState.configMultas) {
+    if (inputRetraso && document.activeElement !== inputRetraso) inputRetraso.value = AppState.configMultas.retraso ?? 30;
+    if (inputFalta && document.activeElement !== inputFalta) inputFalta.value = AppState.configMultas.falta ?? 50;
+    if (inputSinSalida && document.activeElement !== inputSinSalida) inputSinSalida.value = AppState.configMultas.sinSalida ?? 30;
+  }
+
   renderChart(fraternos);
 }
 
@@ -2016,8 +2252,8 @@ function renderChart(fraternos) {
       labels: bloques,
       datasets: [
         { label: 'Puntuales (Bs 0)', data: puntualesData, backgroundColor: '#2ECC71' },
-        { label: 'Atrasos (Bs 30)', data: atrasosData, backgroundColor: '#E67E22' },
-        { label: 'Faltas (Bs 50)', data: faltasData, backgroundColor: '#DA291C' }
+        { label: `Atrasos (Bs ${getMontoMulta('retraso')})`, data: atrasosData, backgroundColor: '#E67E22' },
+        { label: `Faltas (Bs ${getMontoMulta('falta')})`, data: faltasData, backgroundColor: '#DA291C' }
       ]
     },
     options: {
@@ -2192,7 +2428,55 @@ function initProfilePanel() {
     });
   }
 
-  // Poblar y enlazar formulario de contactos y ficha médica
+  const elOrigen = document.getElementById('perfilOrigen');
+  if (elOrigen) {
+    elOrigen.textContent = (dancer.origen === 'Extranjero' && dancer.pais_origen)
+      ? `${dancer.pais_origen} (Extranjero)`
+      : (dancer.origen || 'Bolivia');
+  }
+
+  // Poblar y enlazar formulario de datos del fraterno, tallas y ficha médica
+  const selTallaPolera = document.getElementById('profileTallaPolera');
+  const selTallaChamarra = document.getElementById('profileTallaChamarra');
+  const selTallaCanguro = document.getElementById('profileTallaCanguro');
+  if (selTallaPolera) selTallaPolera.value = tallas.polera || 'M';
+  if (selTallaChamarra) selTallaChamarra.value = tallas.chamarra || 'M';
+  if (selTallaCanguro) selTallaCanguro.value = tallas.canguro || 'M';
+
+  const selProfileOrigen = document.getElementById('profileOrigen');
+  const groupProfilePais = document.getElementById('groupProfilePais');
+  const inputProfilePais = document.getElementById('profilePais');
+
+  if (selProfileOrigen && groupProfilePais) {
+    selProfileOrigen.value = dancer.origen || 'Bolivia';
+    if (selProfileOrigen.value === 'Extranjero') {
+      groupProfilePais.style.display = 'block';
+      if (inputProfilePais) {
+        inputProfilePais.value = dancer.pais_origen || '';
+        inputProfilePais.required = true;
+      }
+    } else {
+      groupProfilePais.style.display = 'none';
+      if (inputProfilePais) {
+        inputProfilePais.value = '';
+        inputProfilePais.required = false;
+      }
+    }
+
+    selProfileOrigen.addEventListener('change', () => {
+      if (selProfileOrigen.value === 'Extranjero') {
+        groupProfilePais.style.display = 'block';
+        if (inputProfilePais) inputProfilePais.required = true;
+      } else {
+        groupProfilePais.style.display = 'none';
+        if (inputProfilePais) {
+          inputProfilePais.required = false;
+          inputProfilePais.value = '';
+        }
+      }
+    });
+  }
+
   const inputPhone = document.getElementById('profilePhone');
   const inputEmerg = document.getElementById('profileEmergencyContact');
   const inputMed = document.getElementById('profileMedicalCondition');
@@ -2204,6 +2488,32 @@ function initProfilePanel() {
   if (formMedical) {
     formMedical.addEventListener('submit', function(e) {
       e.preventDefault();
+
+      if (selTallaPolera && selTallaChamarra && selTallaCanguro) {
+        dancer.tallas = {
+          polera: selTallaPolera.value,
+          chamarra: selTallaChamarra.value,
+          canguro: selTallaCanguro.value
+        };
+        if (elPolera) elPolera.textContent = dancer.tallas.polera;
+        if (elChamarra) elChamarra.textContent = dancer.tallas.chamarra;
+        if (elCanguro) elCanguro.textContent = dancer.tallas.canguro;
+      }
+
+      if (selProfileOrigen) {
+        dancer.origen = selProfileOrigen.value;
+        dancer.pais_origen = (selProfileOrigen.value === 'Extranjero' && inputProfilePais) ? inputProfilePais.value.trim() : '';
+        if (dancer.origen === 'Extranjero' && !dancer.pais_origen) {
+          showToast('País Requerido', 'Por favor indique su país de origen.', 'error');
+          return;
+        }
+        if (elOrigen) {
+          elOrigen.textContent = (dancer.origen === 'Extranjero' && dancer.pais_origen)
+            ? `${dancer.pais_origen} (Extranjero)`
+            : dancer.origen;
+        }
+      }
+
       dancer.telefono = inputPhone ? inputPhone.value.trim() : (dancer.telefono || '');
       dancer.contacto_emergencia = inputEmerg ? inputEmerg.value.trim() : (dancer.contacto_emergencia || '');
       dancer.ficha_medica = inputMed ? inputMed.value.trim() : (dancer.ficha_medica || 'Ninguna');
@@ -2211,13 +2521,16 @@ function initProfilePanel() {
       let fraternosList = getFraternos();
       const idx = fraternosList.findIndex(f => f.ci === dancer.ci);
       if (idx !== -1) {
+        fraternosList[idx].tallas = dancer.tallas;
+        fraternosList[idx].origen = dancer.origen;
+        fraternosList[idx].pais_origen = dancer.pais_origen;
         fraternosList[idx].telefono = dancer.telefono;
         fraternosList[idx].contacto_emergencia = dancer.contacto_emergencia;
         fraternosList[idx].ficha_medica = dancer.ficha_medica;
         saveFraternos(fraternosList);
       }
       localStorage.setItem('sambos_active_user', JSON.stringify(dancer));
-      showToast('Datos Actualizados', 'Sus datos de contacto y ficha médica se han guardado.', 'success');
+      showToast('Datos Actualizados', 'Sus datos personales, tallas y ficha médica se han guardado.', 'success');
     });
   }
 
@@ -2226,6 +2539,7 @@ function initProfilePanel() {
 
   renderQRCodeFraterno(dancer.ci, dancer.nombre);
   renderHistorialEnsayosFraterno(dancer);
+  renderDesgloseMultasFraterno(dancer);
   renderCuotasProgramadasFraterno(dancer);
   updateProfileFinancialSummary(dancer);
 
