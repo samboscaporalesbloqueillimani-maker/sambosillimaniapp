@@ -2216,3 +2216,33 @@ onAuthStateChanged(auth, (user) => {
         }
       });
     }
+    // ==========================================
+    // CONTROLADOR DE NAVEGACIÓN DE PESTAÑAS (FRATERNOS)
+    // ==========================================
+    document.addEventListener("DOMContentLoaded", () => {
+      const tabs = document.querySelectorAll(".tab-btn");
+      const contents = document.querySelectorAll(".tab-content");
+
+      tabs.forEach(tab => {
+        tab.addEventListener("click", () => {
+          // 1. Quitar el estado activo de todos los botones
+          tabs.forEach(t => t.classList.remove("active"));
+          // 2. Ocultar todos los contenidos de pestañas
+          contents.forEach(c => {
+            c.style.display = "none";
+            c.classList.remove("active");
+          });
+
+          // 3. Activar el botón presionado
+          tab.classList.add("active");
+
+          // 4. Mostrar el bloque de contenido correspondiente
+          const targetId = tab.getAttribute("data-tab");
+          const targetContent = document.getElementById(targetId);
+          if (targetContent) {
+            targetContent.style.display = "block";
+            targetContent.classList.add("active");
+          }
+        });
+      });
+    });
