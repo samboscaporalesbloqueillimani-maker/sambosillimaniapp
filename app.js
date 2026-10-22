@@ -97,7 +97,10 @@ onAuthStateChanged(auth, (user) => {
         window.location.href = "index.html";
       }
     }
-    // 1. CONSTANTES Y CONFIGURACIÓN GENERAL
+  }
+});
+
+// 1. CONSTANTES Y CONFIGURACIÓN GENERAL
     // --------------------------------------------------------------------------
     const HORA_ENSAYO_INICIO = "10:30";
     const TOLERANCIA_MINUTOS = 10;
@@ -659,11 +662,13 @@ onAuthStateChanged(auth, (user) => {
     // --------------------------------------------------------------------------
     // 6. PANEL DE ADMINISTRACIÓN Y CONTROL DE SEGURIDAD (admin.html)
     // --------------------------------------------------------------------------
-    function initTabNavigation() {
-      const tabBtns = document.querySelectorAll('#adminNavTabs .tab-btn');
-      const tabContents = document.querySelectorAll('.tab-content');
+    function initTabNavigation(navId = 'adminNavTabs', containerId = 'adminMainContainer') {
+      const nav = document.getElementById(navId);
+      const container = document.getElementById(containerId);
+      if (!nav) return;
 
-      if (!tabBtns.length) return;
+      const tabBtns = nav.querySelectorAll('.tab-btn');
+      const tabContents = container ? container.querySelectorAll('.tab-content') : document.querySelectorAll('.tab-content');
 
       tabBtns.forEach(btn => {
         btn.addEventListener('click', () => {
@@ -844,6 +849,12 @@ onAuthStateChanged(auth, (user) => {
           groupCuotaSel.style.display = selManualTipo.value === 'CUOTA' ? 'block' : 'none';
         });
       }
+
+      const formEditEnsayo = document.getElementById('formEditarEnsayo');
+      if (formEditEnsayo) formEditEnsayo.addEventListener('submit', guardarEdicionEnsayo);
+
+      const formEditCuota = document.getElementById('formEditarCuota');
+      if (formEditCuota) formEditCuota.addEventListener('submit', guardarEdicionCuota);
 
       renderAdminData();
     }
@@ -1278,6 +1289,9 @@ onAuthStateChanged(auth, (user) => {
         return;
       }
 
+      const activeUser = JSON.parse(localStorage.getItem('sambos_active_user')) || {};
+      const canManageEnsayos = activeUser.roleType === 'admin' || activeUser.rol === 'Guía Central' || activeUser.rol === 'Admin / Guía Central';
+
       tbody.innerHTML = ensayos.map(e => {
         const isActive = e.id === AppState.ensayoActivoId;
         const estadoMarcado = e.estadoMarcado || (isActive ? currentScanMode : 'ENTRADA');
@@ -1312,6 +1326,14 @@ onAuthStateChanged(auth, (user) => {
             <button class="btn btn-gold" style="padding: 0.25rem 0.6rem; font-size: 0.75rem; background: #0D6EFD; border-color: #0D6EFD; color: #fff;" onclick="setModoMarcadoEnsayo('${e.id}', 'SALIDA')">
               <i class="fa-solid fa-right-from-bracket"></i> Habilitar Salida
             </button>
+            ${canManageEnsayos ? `
+              <button class="btn btn-outline" style="padding: 0.25rem 0.6rem; font-size: 0.75rem; color: var(--color-gold); border-color: var(--color-gold);" onclick="abrirModalEditarEnsayo('${e.id}')" title="Modificar Ensayo">
+                <i class="fa-solid fa-pen-to-square"></i> Modificar
+              </button>
+              <button class="btn btn-outline" style="padding: 0.25rem 0.6rem; font-size: 0.75rem; color: #FF6B6B; border-color: #FF6B6B;" onclick="eliminarEnsayo('${e.id}')" title="Eliminar Ensayo">
+                <i class="fa-solid fa-trash-can"></i> Eliminar
+              </button>
+            ` : ''}
           </div>
         </td>
       </tr>
@@ -1361,6 +1383,80 @@ onAuthStateChanged(auth, (user) => {
       renderAdminData();
 
       showToast('Ensayo Programado', `Nuevo Ensayo General '${desc}' programado para el ${fecha}.`, 'success', 4000);
+    }
+
+    function abrirModalEditarEnsayo(ensayoId) {
+      const ens = (AppState.ensayos || []).find(e => e.id === ensayoId);
+      if (!ens) return;
+
+      const modal = document.getElementById('modalEditarEnsayo');
+      const idInput = document.getElementById('editEnsayoId');
+      const fechaInput = document.getElementById('editEnsayoFecha');
+      const descInput = document.getElementById('editEnsayoDesc');
+      const horaInput = document.getElementById('editEnsayoHoraInicio');
+      const tolInput = document.getElementById('editEnsayoTolerancia');
+
+      if (idInput) idInput.value = ens.id;
+      if (fechaInput) fechaInput.value = ens.fecha;
+      if (descInput) descInput.value = ens.desc;
+      if (horaInput) horaInput.value = ens.horaInicio || '10:30';
+      if (tolInput) tolInput.value = ens.horaTolerancia || 10;
+
+      if (modal) modal.classList.add('active');
+    }
+
+    function closeModalEditarEnsayo() {
+      const modal = document.getElementById('modalEditarEnsayo');
+      if (modal) modal.classList.remove('active');
+    }
+
+    function guardarEdicionEnsayo(e) {
+      e.preventDefault();
+      const id = document.getElementById('editEnsayoId').value;
+      const fecha = document.getElementById('editEnsayoFecha').value;
+      const desc = document.getElementById('editEnsayoDesc').value.trim();
+      const horaInicio = document.getElementById('editEnsayoHoraInicio').value;
+      const tolerancia = parseInt(document.getElementById('editEnsayoTolerancia').value, 10) || 10;
+
+      if (!fecha || !desc) {
+        showToast('Campos Incompletos', 'Ingrese la fecha y el lugar/descripción del ensayo.', 'error');
+        return;
+      }
+
+      const idx = (AppState.ensayos || []).findIndex(ens => ens.id === id);
+      if (idx !== -1) {
+        AppState.ensayos[idx].fecha = fecha;
+        AppState.ensayos[idx].desc = desc;
+        AppState.ensayos[idx].horaInicio = horaInicio;
+        AppState.ensayos[idx].horaTolerancia = tolerancia;
+        saveState();
+        closeModalEditarEnsayo();
+        renderAdminData();
+        showToast('Ensayo Modificado', `Se actualizaron los datos del ensayo correctamente.`, 'success', 3500);
+      }
+    }
+
+    function eliminarEnsayo(ensayoId) {
+      const ens = (AppState.ensayos || []).find(e => e.id === ensayoId);
+      const nombreEns = ens ? ens.desc : 'este ensayo';
+
+      if (!confirm(`¿Está seguro de eliminar el ensayo '${nombreEns}'? Esta acción no se puede deshacer.`)) {
+        return;
+      }
+
+      AppState.ensayos = (AppState.ensayos || []).filter(e => e.id !== ensayoId);
+
+      if (AppState.ensayoActivoId === ensayoId) {
+        AppState.ensayoActivoId = AppState.ensayos[0] ? AppState.ensayos[0].id : null;
+      }
+
+      if (AppState.asistencias && AppState.asistencias[ensayoId]) {
+        delete AppState.asistencias[ensayoId];
+      }
+
+      saveState();
+      renderAdminData();
+      showToast('Ensayo Eliminado', `El ensayo ha sido eliminado del sistema.`, 'warning', 3500);
     }
 
     function renderEnsayosSelector() {
@@ -1471,6 +1567,67 @@ onAuthStateChanged(auth, (user) => {
       renderAdminData();
 
       showToast('Cuota Programada', `Se programó '${nombre}' (Bs ${monto}) con fecha límite ${fechaLimite}.`, 'success', 4000);
+    }
+
+    function abrirModalEditarCuota(cuotaId) {
+      const cuota = (AppState.hitosCuotas || []).find(h => h.id === cuotaId);
+      if (!cuota) return;
+
+      const modal = document.getElementById('modalEditarCuota');
+      const idInput = document.getElementById('editCuotaId');
+      const nombreInput = document.getElementById('editCuotaNombre');
+      const fechaInput = document.getElementById('editCuotaFechaLimite');
+      const montoInput = document.getElementById('editCuotaMonto');
+
+      if (idInput) idInput.value = cuota.id;
+      if (nombreInput) nombreInput.value = cuota.nombre;
+      if (fechaInput) fechaInput.value = cuota.fechaLimite;
+      if (montoInput) montoInput.value = cuota.monto;
+
+      if (modal) modal.classList.add('active');
+    }
+
+    function closeModalEditarCuota() {
+      const modal = document.getElementById('modalEditarCuota');
+      if (modal) modal.classList.remove('active');
+    }
+
+    function guardarEdicionCuota(e) {
+      e.preventDefault();
+      const id = document.getElementById('editCuotaId').value;
+      const nombre = document.getElementById('editCuotaNombre').value.trim();
+      const fechaLimite = document.getElementById('editCuotaFechaLimite').value;
+      const monto = parseFloat(document.getElementById('editCuotaMonto').value) || 0;
+
+      if (!nombre || !fechaLimite || monto <= 0) {
+        showToast('Campos Incompletos', 'Ingrese nombre, fecha límite y monto válido.', 'error');
+        return;
+      }
+
+      const idx = (AppState.hitosCuotas || []).findIndex(h => h.id === id);
+      if (idx !== -1) {
+        AppState.hitosCuotas[idx].nombre = nombre;
+        AppState.hitosCuotas[idx].fechaLimite = fechaLimite;
+        AppState.hitosCuotas[idx].monto = monto;
+        saveState();
+        closeModalEditarCuota();
+        renderAdminData();
+        showToast('Cuota Modificada', `Se actualizó '${nombre}' (Bs ${monto}) correctamente.`, 'success', 3500);
+      }
+    }
+
+    function eliminarCuota(cuotaId) {
+      const cuota = (AppState.hitosCuotas || []).find(h => h.id === cuotaId);
+      const nombreCuota = cuota ? cuota.nombre : 'esta cuota';
+
+      if (!confirm(`¿Está seguro de eliminar la cuota '${nombreCuota}' del sistema de caja? Esta acción no se puede deshacer.`)) {
+        return;
+      }
+
+      AppState.hitosCuotas = (AppState.hitosCuotas || []).filter(h => h.id !== cuotaId);
+      saveState();
+      renderAdminData();
+      showToast('Cuota Eliminada', `La cuota '${nombreCuota}' fue retirada del sistema.`, 'warning', 3500);
     }
 
     function openModalPagoManual(prefillCI = '', defaultTipo = 'CUOTA') {
@@ -1585,6 +1742,9 @@ onAuthStateChanged(auth, (user) => {
         return;
       }
 
+      const activeUser = JSON.parse(localStorage.getItem('sambos_active_user')) || {};
+      const canManageCuotas = activeUser.roleType === 'admin' || activeUser.roleType === 'encargado_pagos' || activeUser.rol === 'Guía Central' || activeUser.rol === 'Admin / Guía Central' || activeUser.rol === 'Encargado de Pagos';
+
       const fraternos = getFraternos();
 
       tbody.innerHTML = hitos.map(h => {
@@ -1601,9 +1761,19 @@ onAuthStateChanged(auth, (user) => {
         <td><strong style="color: #2ECC71; font-size: 1.05rem;">Bs ${h.monto}</strong></td>
         <td><span class="badge badge-gold">${alDiaCount} de ${fraternos.length} Fraternos Al Día</span></td>
         <td>
-          <button class="btn btn-outline" style="padding: 0.3rem 0.7rem; font-size: 0.8rem;" onclick="openModalPagoManual('', 'CUOTA')">
-            <i class="fa-solid fa-hand-holding-dollar"></i> Cobrar Cuota
-          </button>
+          <div style="display: flex; gap: 0.4rem; flex-wrap: wrap;">
+            <button class="btn btn-outline" style="padding: 0.3rem 0.6rem; font-size: 0.8rem;" onclick="openModalPagoManual('', 'CUOTA')">
+              <i class="fa-solid fa-hand-holding-dollar"></i> Cobrar Cuota
+            </button>
+            ${canManageCuotas ? `
+              <button class="btn btn-outline" style="padding: 0.3rem 0.6rem; font-size: 0.8rem; color: var(--color-gold); border-color: var(--color-gold);" onclick="abrirModalEditarCuota('${h.id}')" title="Modificar Cuota">
+                <i class="fa-solid fa-pen-to-square"></i> Editar
+              </button>
+              <button class="btn btn-outline" style="padding: 0.3rem 0.6rem; font-size: 0.8rem; color: #FF6B6B; border-color: #FF6B6B;" onclick="eliminarCuota('${h.id}')" title="Eliminar Cuota">
+                <i class="fa-solid fa-trash-can"></i> Eliminar
+              </button>
+            ` : ''}
+          </div>
         </td>
       </tr>
     `;
@@ -1724,6 +1894,67 @@ onAuthStateChanged(auth, (user) => {
       }).join('');
 
       if (summaryBadge) summaryBadge.textContent = `${paidCount} de ${hitos.length} Cuotas Canceladas`;
+    }
+
+    function renderDesgloseMultasFraterno(dancer) {
+      const container = document.getElementById('contenedorDesgloseMultasFraterno');
+      const summaryBadge = document.getElementById('userMultasSummary');
+      if (!container) return;
+
+      const ensayos = AppState.ensayos || [];
+      const asistencias = AppState.asistencias || {};
+      const multasList = [];
+
+      ensayos.forEach(ens => {
+        const record = (asistencias[ens.id] && asistencias[ens.id][dancer.ci]) ? asistencias[ens.id][dancer.ci] : null;
+        if (record && record.multaBob && record.multaBob > 0) {
+          multasList.push({
+            fecha: ens.fecha,
+            desc: ens.desc,
+            motivo: record.estadoAsistencia || 'Sanción Reglamentaria',
+            monto: record.multaBob
+          });
+        }
+      });
+
+      if (multasList.length === 0 && (dancer.deuda > 0 || dancer.multasAcumuladas > 0)) {
+        multasList.push({
+          fecha: 'Temporada Oficial',
+          desc: 'Multas y sanciones acumuladas de asistencia',
+          motivo: 'Pendiente de regularización',
+          monto: dancer.deuda || dancer.multasAcumuladas
+        });
+      }
+
+      if (summaryBadge) {
+        summaryBadge.textContent = `${multasList.length} ${multasList.length === 1 ? 'Multa' : 'Multas'}`;
+      }
+
+      if (multasList.length === 0) {
+        container.innerHTML = `
+          <div style="text-align: center; color: #2ECC71; padding: 1.2rem; background: rgba(46, 204, 113, 0.08); border-radius: 10px; border: 1px dashed rgba(46, 204, 113, 0.3);">
+            <i class="fa-solid fa-circle-check" style="font-size: 1.4rem; display: block; margin-bottom: 0.4rem;"></i>
+            <strong>¡Excelente Puntualidad!</strong> No registra multas ni sanciones de asistencia pendientes.
+          </div>
+        `;
+        return;
+      }
+
+      container.innerHTML = multasList.map(m => `
+        <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(218, 41, 28, 0.3); border-radius: 12px; padding: 1rem; margin-bottom: 0.8rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.8rem;">
+          <div>
+            <strong style="color: var(--color-white); font-size: 0.95rem;">${m.desc}</strong>
+            <div style="font-size: 0.8rem; color: var(--text-muted); margin-top: 0.2rem;">
+              <i class="fa-solid fa-calendar-day"></i> ${m.fecha} • Motivo: <span style="color: #FF6B6B; font-weight: 600;">${m.motivo}</span>
+            </div>
+          </div>
+          <div>
+            <span class="badge badge-danger" style="font-size: 0.9rem; padding: 0.4rem 0.8rem; font-weight: 700;">
+              Bs ${m.monto}
+            </span>
+          </div>
+        </div>
+      `).join('');
     }
 
     function updateProfileFinancialSummary(dancer) {
@@ -2071,6 +2302,9 @@ onAuthStateChanged(auth, (user) => {
       if (elFecha) elFecha.textContent = dancer.fechaNacimiento || '--/--/----';
       if (elAnio) elAnio.textContent = dancer.anioIngreso || '2026';
 
+      const elOrigen = document.getElementById('perfilOrigen');
+      if (elOrigen) elOrigen.textContent = dancer.origen || 'Bolivia';
+
       const tallas = dancer.tallas || {};
       if (elPolera) elPolera.textContent = tallas.polera || '-';
       if (elChamarra) elChamarra.textContent = tallas.chamarra || '-';
@@ -2110,9 +2344,13 @@ onAuthStateChanged(auth, (user) => {
         });
       }
 
+      // Inicializar navegación por pestañas para el perfil del Fraterno
+      initTabNavigation('profileNavTabs', 'profileMainContainer');
+
       renderQRCodeFraterno(dancer.ci, dancer.nombre);
       renderHistorialEnsayosFraterno(dancer);
       renderCuotasProgramadasFraterno(dancer);
+      renderDesgloseMultasFraterno(dancer);
       updateProfileFinancialSummary(dancer);
 
       const btnLogout = document.getElementById('btnLogout');
@@ -2178,6 +2416,33 @@ onAuthStateChanged(auth, (user) => {
       container.appendChild(qrImg);
     }
 
+    // Exposición de funciones en window para botones onclick y controladores del DOM
+    window.seleccionarEnsayoActivo = seleccionarEnsayoActivo;
+    window.setModoMarcadoEnsayo = setModoMarcadoEnsayo;
+    window.openModalCrearEnsayo = openModalCrearEnsayo;
+    window.closeModalCrearEnsayo = closeModalCrearEnsayo;
+    window.abrirModalEditarEnsayo = abrirModalEditarEnsayo;
+    window.closeModalEditarEnsayo = closeModalEditarEnsayo;
+    window.guardarEdicionEnsayo = guardarEdicionEnsayo;
+    window.eliminarEnsayo = eliminarEnsayo;
+    window.openModalCrearCuota = openModalCrearCuota;
+    window.closeModalCrearCuota = closeModalCrearCuota;
+    window.abrirModalEditarCuota = abrirModalEditarCuota;
+    window.closeModalEditarCuota = closeModalEditarCuota;
+    window.guardarEdicionCuota = guardarEdicionCuota;
+    window.eliminarCuota = eliminarCuota;
+    window.openModalPagoManual = openModalPagoManual;
+    window.closeModalPagoManual = closeModalPagoManual;
+    window.processQRScan = processQRScan;
+    window.previsualizarFotoRegistro = previsualizarFotoRegistro;
+    window.openRegisterModal = openRegisterModal;
+    window.closeRegisterModal = closeRegisterModal;
+    window.evaluarPostulante = evaluarPostulante;
+    window.cambiarRolFraterno = cambiarRolFraterno;
+    window.showMedicalAlertModalByCI = showMedicalAlertModalByCI;
+    window.closeMedicalModal = closeMedicalModal;
+    window.initTabNavigation = initTabNavigation;
+
     document.addEventListener('DOMContentLoaded', () => {
       initLocalStorage();
 
@@ -2189,59 +2454,4 @@ onAuthStateChanged(auth, (user) => {
       } else {
         initWelcomeAndLogin();
       }
-    });
-    // Capturar el envío del formulario de registro con Carnet de Identidad (CI)
-    const formRegister = document.getElementById("formRegister");
-    if (formRegister) {
-      formRegister.addEventListener("submit", (e) => {
-        e.preventDefault(); // Evita que la página se recargue
-
-        // 1. Buscamos el input donde el usuario escribe su número de carnet
-        // (Asegúrate de que en tu index.html el input tenga id="registerCI")
-        const carnetInput = document.getElementById("registerCI")?.value.trim() || "";
-
-        if (carnetInput) {
-          // 2. Creamos un correo virtual interno para Firebase usando su carnet
-          const emailVirtual = `${carnetInput}@sambos.com`;
-
-          // 3. Creamos una contraseña por defecto (ej: los primeros 4 dígitos + sambos)
-          // Firebase exige un mínimo de 6 caracteres para las contraseñas
-          const passwordVirtual = `${carnetInput.substring(0, 4)}sambos`;
-
-          // 4. Enviamos los datos simulados a la nube de Firebase
-          window.registrarUsuario(emailVirtual, passwordVirtual);
-        } else {
-          alert("Por favor, ingresa tu número de carnet de identidad.");
-        }
-      });
-    }
-    // ==========================================
-    // CONTROLADOR DE NAVEGACIÓN DE PESTAÑAS (FRATERNOS)
-    // ==========================================
-    document.addEventListener("DOMContentLoaded", () => {
-      const tabs = document.querySelectorAll(".tab-btn");
-      const contents = document.querySelectorAll(".tab-content");
-
-      tabs.forEach(tab => {
-        tab.addEventListener("click", () => {
-          // 1. Quitar el estado activo de todos los botones
-          tabs.forEach(t => t.classList.remove("active"));
-          // 2. Ocultar todos los contenidos de pestañas
-          contents.forEach(c => {
-            c.style.display = "none";
-            c.classList.remove("active");
-          });
-
-          // 3. Activar el botón presionado
-          tab.classList.add("active");
-
-          // 4. Mostrar el bloque de contenido correspondiente
-          const targetId = tab.getAttribute("data-tab");
-          const targetContent = document.getElementById(targetId);
-          if (targetContent) {
-            targetContent.style.display = "block";
-            targetContent.classList.add("active");
-          }
-        });
-      });
     });

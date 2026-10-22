@@ -757,6 +757,100 @@
     </div>
   </div>
 
+  <!-- Modal para Modificar Ensayo Programado -->
+  <div class="modal-overlay" id="modalEditarEnsayo">
+    <div class="modal-card" style="max-width: 480px; text-align: left;">
+      <h3
+        style="color: var(--color-gold); font-family: var(--font-heading); font-size: 1.3rem; margin-bottom: 0.5rem; text-align: center;">
+        <i class="fa-solid fa-pen-to-square"></i> Modificar Ensayo Programado
+      </h3>
+      <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1.2rem; text-align: center;">
+        Actualice la fecha, lugar/descripción o el horario de inicio del ensayo general.
+      </p>
+
+      <form id="formEditarEnsayo">
+        <input type="hidden" id="editEnsayoId">
+        <div class="form-group">
+          <label class="form-label" for="editEnsayoFecha">Fecha del Ensayo General *</label>
+          <input type="date" id="editEnsayoFecha" class="form-control" required
+            style="background: var(--bg-card); color: var(--color-white);">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="editEnsayoDesc">Lugar / Descripción del Ensayo *</label>
+          <input type="text" id="editEnsayoDesc" class="form-control" placeholder="Ej: Ensayo General - Plaza Villarroel"
+            required>
+        </div>
+
+        <div class="grid-2">
+          <div class="form-group">
+            <label class="form-label" for="editEnsayoHoraInicio">Hora Oficial Inicio *</label>
+            <input type="time" id="editEnsayoHoraInicio" class="form-control" required
+              style="background: var(--bg-card); color: var(--color-white);">
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="editEnsayoTolerancia">Minutos Tolerancia *</label>
+            <input type="number" id="editEnsayoTolerancia" class="form-control" min="0" max="60" required>
+          </div>
+        </div>
+
+        <div style="display: flex; gap: 0.8rem; margin-top: 1.2rem;">
+          <button type="submit" class="btn btn-gold" style="flex: 2;">
+            <i class="fa-solid fa-floppy-disk"></i> Guardar Cambios
+          </button>
+          <button type="button" class="btn btn-outline" onclick="closeModalEditarEnsayo()" style="flex: 1;">
+            Cancelar
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal para Editar Cuota Financiera -->
+  <div class="modal-overlay" id="modalEditarCuota">
+    <div class="modal-card" style="max-width: 480px; text-align: left;">
+      <h3
+        style="color: var(--color-gold); font-family: var(--font-heading); font-size: 1.3rem; margin-bottom: 0.5rem; text-align: center;">
+        <i class="fa-solid fa-pen-to-square"></i> Modificar Cuota Financiera
+      </h3>
+      <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1.2rem; text-align: center;">
+        Actualice el concepto, fecha límite de pago o monto en bolivianos (BOB) de la cuota programada.
+      </p>
+
+      <form id="formEditarCuota">
+        <input type="hidden" id="editCuotaId">
+        <div class="form-group">
+          <label class="form-label" for="editCuotaNombre">Nombre o Concepto de la Cuota *</label>
+          <input type="text" id="editCuotaNombre" class="form-control" placeholder="Ej: Cuota Inicial Traje de Baile"
+            required>
+        </div>
+
+        <div class="grid-2">
+          <div class="form-group">
+            <label class="form-label" for="editCuotaFechaLimite">Fecha Límite de Pago *</label>
+            <input type="date" id="editCuotaFechaLimite" class="form-control" required
+              style="background: var(--bg-card); color: var(--color-white);">
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="editCuotaMonto">Monto en Bolivianos (Bs) *</label>
+            <input type="number" id="editCuotaMonto" class="form-control" min="1" required>
+          </div>
+        </div>
+
+        <div style="display: flex; gap: 0.8rem; margin-top: 1.2rem;">
+          <button type="submit" class="btn btn-gold" style="flex: 2;">
+            <i class="fa-solid fa-floppy-disk"></i> Guardar Cambios
+          </button>
+          <button type="button" class="btn btn-outline" onclick="closeModalEditarCuota()" style="flex: 1;">
+            Cancelar
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
   <!-- Modal Registrar Pago Manual de Cuota / Multa -->
   <div class="modal-overlay" id="modalPagoManual">
     <div class="modal-card" style="max-width: 520px; text-align: left;">
