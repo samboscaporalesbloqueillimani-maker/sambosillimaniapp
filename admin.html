@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -12,6 +13,7 @@
   <!-- Chart.js -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
+
 <body>
 
   <!-- Toast Notification Container -->
@@ -21,7 +23,8 @@
   <header class="app-header">
     <a href="#" class="header-brand">
       <div class="brand-icon">
-        <img src="escudo.png" alt="Escudo Sambos Caporales" class="escudo-oficial" style="width: 40px; height: 40px; max-width: 40px;">
+        <img src="escudo.png" alt="Escudo Sambos Caporales" class="escudo-oficial"
+          style="width: 40px; height: 40px; max-width: 40px;">
       </div>
       <div class="brand-text">
         <h1>Bloque Illimani</h1>
@@ -30,7 +33,9 @@
     </a>
 
     <div class="header-user">
-      <a href="mi-perfil.html" class="btn btn-outline" style="padding: 0.4rem 0.8rem; font-size: 0.85rem; border-color: var(--color-gold); color: var(--color-gold); text-decoration: none; margin-right: 0.5rem;" title="Ver Ficha de Perfil / Kardex Individual">
+      <a href="mi-perfil.html" class="btn btn-outline"
+        style="padding: 0.4rem 0.8rem; font-size: 0.85rem; border-color: var(--color-gold); color: var(--color-gold); text-decoration: none; margin-right: 0.5rem;"
+        title="Ver Ficha de Perfil / Kardex Individual">
         <i class="fa-solid fa-id-badge"></i> Mi Perfil
       </a>
       <div class="user-badge">
@@ -52,7 +57,8 @@
       <i class="fa-solid fa-qrcode"></i> 📷 Escáner QR & Marcado
     </button>
     <button class="tab-btn" data-tab="tabAdmisiones" id="navTabAdmisiones">
-      <i class="fa-solid fa-user-shield"></i> 📋 Solicitudes Admisión <span class="badge badge-danger" id="navBadgePendientes" style="font-size:0.7rem; margin-left:0.2rem;">0</span>
+      <i class="fa-solid fa-user-shield"></i> 📋 Solicitudes Admisión <span class="badge badge-danger"
+        id="navBadgePendientes" style="font-size:0.7rem; margin-left:0.2rem;">0</span>
     </button>
     <button class="tab-btn" data-tab="tabFraternos" id="navTabFraternos">
       <i class="fa-solid fa-users"></i> 👥 Registro de Fraternos
@@ -73,21 +79,24 @@
 
   <!-- Contenido Principal Panel Admin con Pestañas Independientes -->
   <main class="container">
-    
+
     <!-- PESTAÑA 1: CRONOGRAMA DE ENSAYOS GENERALES Y REGISTRO PERMANENTE -->
     <div class="tab-content active" id="tabCronograma">
-      <div class="card" id="secEnsayoCronograma" style="border-left: 5px solid var(--color-gold); margin-bottom: 1.5rem;">
+      <div class="card" id="secEnsayoCronograma"
+        style="border-left: 5px solid var(--color-gold); margin-bottom: 1.5rem;">
         <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
           <div>
             <h3 style="color: var(--color-gold); font-size: 1.25rem; font-weight: 700; margin-bottom: 0.3rem;">
               <i class="fa-solid fa-calendar-days"></i> Programación de Ensayos Generales y Habilitación de Marcado QR
             </h3>
             <p style="font-size: 0.85rem; color: var(--text-muted); margin: 0;">
-              Programe múltiples días de ensayo que permanecerán registrados. Habilite el marcado de Ingreso o Salida para tomar asistencia por escáner QR.
+              Programe múltiples días de ensayo que permanecerán registrados. Habilite el marcado de Ingreso o Salida
+              para tomar asistencia por escáner QR.
             </p>
           </div>
           <div style="display: flex; gap: 0.8rem; align-items: center; flex-wrap: wrap;">
-            <button class="btn btn-outline" id="btnOpenModalEnsayo" style="border-color: var(--color-gold); color: var(--color-gold); font-weight: 700;">
+            <button class="btn btn-outline" id="btnOpenModalEnsayo"
+              style="border-color: var(--color-gold); color: var(--color-gold); font-weight: 700;">
               <i class="fa-solid fa-calendar-plus"></i> ➕ Programar Día de Ensayo
             </button>
             <button class="btn btn-gold" id="btnExportEnsayoDia">
@@ -97,21 +106,26 @@
         </div>
 
         <!-- Selector de Ensayo Activo & Controles Rápidos -->
-        <div style="margin-top: 1rem; background: rgba(255,255,255,0.03); padding: 1rem; border-radius: 12px; border: 1px solid var(--border-glass); display: flex; align-items: center; gap: 1rem; flex-wrap: wrap;">
+        <div
+          style="margin-top: 1rem; background: rgba(255,255,255,0.03); padding: 1rem; border-radius: 12px; border: 1px solid var(--border-glass); display: flex; align-items: center; gap: 1rem; flex-wrap: wrap;">
           <div style="flex: 1; min-width: 280px;">
-            <label for="selectEnsayoActivo" style="font-weight: 700; color: var(--color-gold); display: block; margin-bottom: 0.3rem;">
+            <label for="selectEnsayoActivo"
+              style="font-weight: 700; color: var(--color-gold); display: block; margin-bottom: 0.3rem;">
               <i class="fa-solid fa-calendar-check"></i> Seleccionar Día de Ensayo Activo:
             </label>
-            <select id="selectEnsayoActivo" class="form-control" style="background: var(--bg-card); color: var(--color-white); font-weight: 700;">
+            <select id="selectEnsayoActivo" class="form-control"
+              style="background: var(--bg-card); color: var(--color-white); font-weight: 700;">
               <!-- Opciones inyectadas dinámicamente -->
             </select>
           </div>
 
           <div style="display: flex; gap: 0.6rem; flex-wrap: wrap; align-items: flex-end; margin-top: 1.2rem;">
-            <button class="btn btn-gold" id="btnEnableIngreso" style="background: linear-gradient(135deg, #198754 0%, #2ECC71 100%); color: #FFF; border: none; font-weight: 700;">
+            <button class="btn btn-gold" id="btnEnableIngreso"
+              style="background: linear-gradient(135deg, #198754 0%, #2ECC71 100%); color: #FFF; border: none; font-weight: 700;">
               <i class="fa-solid fa-right-to-bracket"></i> 🔓 Habilitar Marcado de INGRESO (QR)
             </button>
-            <button class="btn btn-gold" id="btnEnableSalida" style="background: linear-gradient(135deg, #0D6EFD 0%, #0B5ED7 100%); color: #FFF; border: none; font-weight: 700;">
+            <button class="btn btn-gold" id="btnEnableSalida"
+              style="background: linear-gradient(135deg, #0D6EFD 0%, #0B5ED7 100%); color: #FFF; border: none; font-weight: 700;">
               <i class="fa-solid fa-right-from-bracket"></i> 🏁 Habilitar Marcado de SALIDA (QR)
             </button>
           </div>
@@ -127,7 +141,8 @@
               <thead>
                 <tr>
                   <th style="min-width: 140px;"><i class="fa-solid fa-calendar-day"></i> Fecha Ensayo</th>
-                  <th style="min-width: 220px;"><i class="fa-solid fa-location-dot"></i> Lugar / Descripción del Ensayo</th>
+                  <th style="min-width: 220px;"><i class="fa-solid fa-location-dot"></i> Lugar / Descripción del Ensayo
+                  </th>
                   <th style="min-width: 110px;"><i class="fa-solid fa-clock"></i> Hora Inicio</th>
                   <th>Estado Marcado</th>
                   <th style="min-width: 230px;"><i class="fa-solid fa-pen-to-square"></i> Acciones & Modificación</th>
@@ -145,19 +160,24 @@
     <!-- PESTAÑA 2: ESCÁNER QR Y TOMA DE ASISTENCIA -->
     <div class="tab-content" id="tabEscaner">
       <!-- Banner de Horario de Ensayo -->
-      <div class="card" id="secAttendanceBanner" style="border-left: 5px solid var(--color-gold); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; margin-bottom: 1.5rem;">
+      <div class="card" id="secAttendanceBanner"
+        style="border-left: 5px solid var(--color-gold); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; margin-bottom: 1.5rem;">
         <div>
           <h3 style="color: var(--color-gold); font-size: 1.1rem; font-weight: 700;">
             <i class="fa-solid fa-clock"></i> Escáner y Control de Marcado Oficial
           </h3>
           <p style="font-size: 0.9rem; color: var(--text-muted);" id="infoEnsayoSelectedDetails">
-            Horario Inicio: <strong>10:30 AM</strong> | Tolerancia: <strong>10 Min (hasta 10:40 AM)</strong> | Multa Atraso: <strong>Bs 30</strong> | Falta: <strong>Bs 50</strong>
+            Horario Inicio: <strong>10:30 AM</strong> | Tolerancia: <strong>10 Min (hasta 10:40 AM)</strong> | Multa
+            Atraso: <strong>Bs 30</strong> | Falta: <strong>Bs 50</strong>
           </p>
         </div>
         <div style="display: flex; gap: 0.8rem; align-items: center; flex-wrap: wrap;">
           <div style="text-align: right;">
-            <div style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase;">Hora Simulación / Actual</div>
-            <div id="simulatedClock" style="font-family: monospace; font-size: 1.3rem; font-weight: 800; color: var(--color-white);">10:35:00 AM</div>
+            <div style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase;">Hora Simulación /
+              Actual</div>
+            <div id="simulatedClock"
+              style="font-family: monospace; font-size: 1.3rem; font-weight: 800; color: var(--color-white);">10:35:00
+              AM</div>
           </div>
           <button class="btn btn-gold" id="btnToggleSimTime" title="Cambiar Simulación de Hora (10:35 AM vs 10:45 AM)">
             <i class="fa-solid fa-forward-step"></i> Simular Atraso (10:45 AM)
@@ -252,7 +272,8 @@
         </div>
 
         <div class="stat-card red" id="secStatMultas">
-          <div class="stat-icon" style="color: var(--color-secondary);"><i class="fa-solid fa-triangle-exclamation"></i></div>
+          <div class="stat-icon" style="color: var(--color-secondary);"><i class="fa-solid fa-triangle-exclamation"></i>
+          </div>
           <div class="stat-info">
             <div class="stat-value" id="statMultasBob">Bs 0</div>
             <div class="stat-label">Multas Generadas</div>
@@ -272,7 +293,8 @@
       <div class="card" id="secAttendanceTableCard">
         <div class="card-title" style="justify-content: space-between;">
           <span><i class="fa-solid fa-list-check"></i> Registro General de Fraternos</span>
-          <span style="font-size: 0.85rem; color: var(--color-gold); font-weight: 400;" id="tableSubheadCount">4 Fraternos</span>
+          <span style="font-size: 0.85rem; color: var(--color-gold); font-weight: 400;" id="tableSubheadCount">4
+            Fraternos</span>
         </div>
 
         <div class="table-responsive">
@@ -311,7 +333,8 @@
 
           <div class="form-group">
             <label class="form-label" for="motivoLicencia">Motivo de la Licencia</label>
-            <textarea class="form-control" id="motivoLicencia" rows="2" placeholder="Ej: Salud, viaje..." required></textarea>
+            <textarea class="form-control" id="motivoLicencia" rows="2" placeholder="Ej: Salud, viaje..."
+              required></textarea>
           </div>
 
           <button type="submit" class="btn btn-primary" style="width: 100%;">
@@ -351,7 +374,8 @@
       </div>
 
       <!-- Barra de Acciones Principales de Tesorería -->
-      <div class="card" style="margin-bottom: 1.5rem; background: rgba(255,255,255,0.03); border: 1px solid var(--color-gold);">
+      <div class="card"
+        style="margin-bottom: 1.5rem; background: rgba(255,255,255,0.03); border: 1px solid var(--color-gold);">
         <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
           <div>
             <h3 style="color: var(--color-gold); font-size: 1.15rem; font-weight: 700; margin-bottom: 0.2rem;">
@@ -365,10 +389,12 @@
             <button class="btn btn-gold" id="btnOpenModalCrearCuota" style="font-weight: 700;">
               <i class="fa-solid fa-calendar-plus"></i> ➕ Programar Cuota Financiera
             </button>
-            <button class="btn btn-gold" id="btnOpenModalPagoManual" style="background: linear-gradient(135deg, #0D6EFD 0%, #0B5ED7 100%); color: #FFF; border: none; font-weight: 700;">
+            <button class="btn btn-gold" id="btnOpenModalPagoManual"
+              style="background: linear-gradient(135deg, #0D6EFD 0%, #0B5ED7 100%); color: #FFF; border: none; font-weight: 700;">
               <i class="fa-solid fa-hand-holding-dollar"></i> 💵 Registrar Pago Manual
             </button>
-            <button class="btn" id="btnExportIngresos" style="background: linear-gradient(135deg, #0F5132 0%, #198754 100%); color: #FFFFFF; font-weight: 700; border: 1px solid rgba(25, 135, 84, 0.4); font-size: 0.85rem;">
+            <button class="btn" id="btnExportIngresos"
+              style="background: linear-gradient(135deg, #0F5132 0%, #198754 100%); color: #FFFFFF; font-weight: 700; border: 1px solid rgba(25, 135, 84, 0.4); font-size: 0.85rem;">
               <i class="fa-solid fa-file-csv"></i> 📊 Exportar Ingresos (Excel)
             </button>
           </div>
@@ -381,7 +407,8 @@
           <i class="fa-solid fa-calendar-days"></i> 📅 Cronograma Oficial de Cuotas Financieras Programadas
         </div>
         <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1rem;">
-          Estas cuotas son visibles para todos los fraternos en su perfil móvil con la fecha límite de pago y monto en Bs.
+          Estas cuotas son visibles para todos los fraternos en su perfil móvil con la fecha límite de pago y monto en
+          Bs.
         </p>
 
         <div class="table-container">
@@ -403,54 +430,67 @@
       </div>
 
       <!-- CONFIGURACIÓN DE MULTAS POR EL ADMINISTRADOR -->
-      <div class="card" style="margin-bottom: 1.5rem; border: 1px solid var(--color-gold); background: rgba(255, 215, 0, 0.03);">
-        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.8rem; margin-bottom: 1rem;">
+      <div class="card"
+        style="margin-bottom: 1.5rem; border: 1px solid var(--color-gold); background: rgba(255, 215, 0, 0.03);">
+        <div
+          style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.8rem; margin-bottom: 1rem;">
           <div>
             <h3 style="color: var(--color-gold); font-size: 1.15rem; font-weight: 700; margin-bottom: 0.2rem;">
               <i class="fa-solid fa-sliders"></i> Configuración Oficial de Multas por Ensayo (BOB)
             </h3>
             <p style="font-size: 0.85rem; color: var(--text-muted); margin: 0;">
-              Configure libremente los montos en bolivianos (BOB) para las tres sanciones reglamentarias. Los cambios se guardan y aplican automáticamente.
+              Configure libremente los montos en bolivianos (BOB) para las tres sanciones reglamentarias. Los cambios se
+              guardan y aplican automáticamente.
             </p>
           </div>
-          <button type="button" class="btn btn-gold" id="btnGuardarConfigMultas" style="font-weight: 700; padding: 0.5rem 1.2rem;">
+          <button type="button" class="btn btn-gold" id="btnGuardarConfigMultas"
+            style="font-weight: 700; padding: 0.5rem 1.2rem;">
             <i class="fa-solid fa-floppy-disk"></i> Guardar Tarifas de Multas
           </button>
         </div>
 
         <form id="formConfigMultas">
           <div class="grid-3" style="gap: 1rem;">
-            <div class="form-group" style="margin-bottom: 0; background: rgba(230, 126, 34, 0.08); border: 1px solid rgba(230, 126, 34, 0.3); border-radius: 12px; padding: 1rem;">
+            <div class="form-group"
+              style="margin-bottom: 0; background: rgba(230, 126, 34, 0.08); border: 1px solid rgba(230, 126, 34, 0.3); border-radius: 12px; padding: 1rem;">
               <label class="form-label" for="cfgMultaRetraso" style="color: #E67E22; font-weight: 700;">
                 <i class="fa-solid fa-clock"></i> 1. Multa por Retraso (Bs) *
               </label>
               <div style="display: flex; align-items: center; gap: 0.4rem;">
                 <span style="font-weight: 800; color: #E67E22; font-size: 1.1rem;">Bs</span>
-                <input type="number" id="cfgMultaRetraso" class="form-control" min="0" step="1" value="30" required style="font-size: 1.25rem; font-weight: 800; color: #FFFFFF; background: var(--bg-card);">
+                <input type="number" id="cfgMultaRetraso" class="form-control" min="0" step="1" value="30" required
+                  style="font-size: 1.25rem; font-weight: 800; color: #FFFFFF; background: var(--bg-card);">
               </div>
-              <span style="font-size: 0.75rem; color: var(--text-muted); display: block; margin-top: 0.3rem;">Aplica al ingresar fuera del horario de tolerancia</span>
+              <span style="font-size: 0.75rem; color: var(--text-muted); display: block; margin-top: 0.3rem;">Aplica al
+                ingresar fuera del horario de tolerancia</span>
             </div>
 
-            <div class="form-group" style="margin-bottom: 0; background: rgba(218, 41, 28, 0.08); border: 1px solid rgba(218, 41, 28, 0.3); border-radius: 12px; padding: 1rem;">
+            <div class="form-group"
+              style="margin-bottom: 0; background: rgba(218, 41, 28, 0.08); border: 1px solid rgba(218, 41, 28, 0.3); border-radius: 12px; padding: 1rem;">
               <label class="form-label" for="cfgMultaFalta" style="color: #FF6B6B; font-weight: 700;">
                 <i class="fa-solid fa-user-xmark"></i> 2. Multa por Falta / Inasistencia (Bs) *
               </label>
               <div style="display: flex; align-items: center; gap: 0.4rem;">
                 <span style="font-weight: 800; color: #FF6B6B; font-size: 1.1rem;">Bs</span>
-                <input type="number" id="cfgMultaFalta" class="form-control" min="0" step="1" value="50" required style="font-size: 1.25rem; font-weight: 800; color: #FFFFFF; background: var(--bg-card);">
+                <input type="number" id="cfgMultaFalta" class="form-control" min="0" step="1" value="50" required
+                  style="font-size: 1.25rem; font-weight: 800; color: #FFFFFF; background: var(--bg-card);">
               </div>
-              <span style="font-size: 0.75rem; color: var(--text-muted); display: block; margin-top: 0.3rem;">Aplica si el fraterno no asiste al ensayo</span>
+              <span style="font-size: 0.75rem; color: var(--text-muted); display: block; margin-top: 0.3rem;">Aplica si
+                el fraterno no asiste al ensayo</span>
             </div>
 
-            <div class="form-group" style="margin-bottom: 0; background: rgba(13, 110, 253, 0.08); border: 1px solid rgba(13, 110, 253, 0.3); border-radius: 12px; padding: 1rem;">
+            <div class="form-group"
+              style="margin-bottom: 0; background: rgba(13, 110, 253, 0.08); border: 1px solid rgba(13, 110, 253, 0.3); border-radius: 12px; padding: 1rem;">
               <label class="form-label" for="cfgMultaSinSalida" style="color: #3498DB; font-weight: 700;">
                 <i class="fa-solid fa-right-from-bracket"></i> 3. Multa por No Marcar Salida (Bs) *
               </label>
               <div style="display: flex; align-items: center; gap: 0.4rem;">
                 <span style="font-weight: 800; color: #3498DB; font-size: 1.1rem;">Bs</span>
-                <input type="number" id="cfgMultaSinSalida" class="form-control" min="0" step="1" value="30" required style="font-size: 1.25rem; font-weight: 800; color: #FFFFFF; background: var(--bg-card);">
+                <input type="number" id="cfgMultaSinSalida" class="form-control" min="0" step="1" value="30" required
+                  style="font-size: 1.25rem; font-weight: 800; color: #FFFFFF; background: var(--bg-card);">
               </div>
-              <span style="font-size: 0.75rem; color: var(--text-muted); display: block; margin-top: 0.3rem;">Aplica si marca entrada pero no registra salida</span>
+              <span style="font-size: 0.75rem; color: var(--text-muted); display: block; margin-top: 0.3rem;">Aplica si
+                marca entrada pero no registra salida</span>
             </div>
           </div>
         </form>
@@ -512,18 +552,6 @@
         </div>
       </div>
 
-      <!-- BANDEJA DE VALIDACIÓN DE COMPROBANTES DE PAGO BASE64 -->
-      <div class="card" id="secReceiptsInbox">
-        <div class="card-title">
-          <span><i class="fa-solid fa-receipt"></i> Validación de Comprobantes de Pago Subidos por Fraternos (Base64)</span>
-        </div>
-        <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1rem;">
-          Comprobantes enviados por danzantes pendientes de validación para acreditar a su cuenta.
-        </p>
-
-        <div id="receiptsInboxContainer"></div>
-      </div>
-
     </div>
 
     <!-- PESTAÑA 7: CONFIGURACIÓN DE PERSONAL -->
@@ -570,7 +598,8 @@
         </p>
 
         <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
-          <button class="btn" id="btnExportTallas" style="background: linear-gradient(135deg, #1B4D3E 0%, #2ECC71 100%); color: #FFFFFF; font-weight: 700; border: 1px solid rgba(46, 204, 113, 0.4);">
+          <button class="btn" id="btnExportTallas"
+            style="background: linear-gradient(135deg, #1B4D3E 0%, #2ECC71 100%); color: #FFFFFF; font-weight: 700; border: 1px solid rgba(46, 204, 113, 0.4);">
             <i class="fa-solid fa-shirt"></i> 📥 Exportar Tallas y Bloques a Excel
           </button>
 
@@ -599,21 +628,25 @@
       <div class="medical-alert-icon">
         <i class="fa-solid fa-kit-medical"></i>
       </div>
-      <h2 style="color: var(--color-secondary); font-family: var(--font-heading); font-size: 1.5rem; margin-bottom: 0.5rem;">
+      <h2
+        style="color: var(--color-secondary); font-family: var(--font-heading); font-size: 1.5rem; margin-bottom: 0.5rem;">
         ¡ALERTA MÉDICA DETECTADA!
       </h2>
       <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 1.2rem;">
         El fraterno requiere atención especial durante el ensayo físico.
       </p>
 
-      <div style="background: rgba(255,255,255,0.05); border: 1px dashed var(--color-secondary); border-radius: 12px; padding: 1rem; text-align: left; margin-bottom: 1.5rem;">
-        <div style="font-weight: 800; font-size: 1.2rem; color: var(--color-white);" id="modalFraternoName">Nombre Fraterno</div>
+      <div
+        style="background: rgba(255,255,255,0.05); border: 1px dashed var(--color-secondary); border-radius: 12px; padding: 1rem; text-align: left; margin-bottom: 1.5rem;">
+        <div style="font-weight: 800; font-size: 1.2rem; color: var(--color-white);" id="modalFraternoName">Nombre
+          Fraterno</div>
         <div style="font-size: 0.85rem; color: var(--color-gold);" id="modalFraternoRole">Bloque • CI</div>
         <hr style="border-color: var(--border-glass); margin: 0.8rem 0;">
         <div style="font-weight: 700; color: #FF6B6B; font-size: 0.95rem; margin-bottom: 0.4rem;">
           <i class="fa-solid fa-hand-holding-medical"></i> Condición Médica:
         </div>
-        <div style="font-size: 0.95rem; color: var(--color-white); font-weight: 600;" id="modalMedicalNotes">Observaciones médicas</div>
+        <div style="font-size: 0.95rem; color: var(--color-white); font-weight: 600;" id="modalMedicalNotes">
+          Observaciones médicas</div>
         <hr style="border-color: var(--border-glass); margin: 0.8rem 0;">
         <div style="font-weight: 700; color: var(--color-gold); font-size: 0.9rem; margin-bottom: 0.4rem;">
           <i class="fa-solid fa-phone"></i> Contacto de Emergencia:
@@ -635,7 +668,8 @@
   <!-- Modal para Programar Día de Ensayo General -->
   <div class="modal-overlay" id="modalCrearEnsayo">
     <div class="modal-card" style="max-width: 480px; text-align: left;">
-      <h3 style="color: var(--color-gold); font-family: var(--font-heading); font-size: 1.3rem; margin-bottom: 0.5rem; text-align: center;">
+      <h3
+        style="color: var(--color-gold); font-family: var(--font-heading); font-size: 1.3rem; margin-bottom: 0.5rem; text-align: center;">
         <i class="fa-solid fa-calendar-plus"></i> Programar Nuevo Día de Ensayo General
       </h3>
       <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1.2rem; text-align: center;">
@@ -645,18 +679,21 @@
       <form id="formCrearEnsayo">
         <div class="form-group">
           <label class="form-label" for="newEnsayoFecha">Fecha del Ensayo General *</label>
-          <input type="date" id="newEnsayoFecha" class="form-control" required style="background: var(--bg-card); color: var(--color-white);">
+          <input type="date" id="newEnsayoFecha" class="form-control" required
+            style="background: var(--bg-card); color: var(--color-white);">
         </div>
 
         <div class="form-group">
           <label class="form-label" for="newEnsayoDesc">Lugar / Descripción del Ensayo *</label>
-          <input type="text" id="newEnsayoDesc" class="form-control" placeholder="Ej: Ensayo General - Plaza Villarroel" required>
+          <input type="text" id="newEnsayoDesc" class="form-control" placeholder="Ej: Ensayo General - Plaza Villarroel"
+            required>
         </div>
 
         <div class="grid-2">
           <div class="form-group">
             <label class="form-label" for="newEnsayoHoraInicio">Hora Oficial Inicio *</label>
-            <input type="time" id="newEnsayoHoraInicio" class="form-control" value="10:30" required style="background: var(--bg-card); color: var(--color-white);">
+            <input type="time" id="newEnsayoHoraInicio" class="form-control" value="10:30" required
+              style="background: var(--bg-card); color: var(--color-white);">
           </div>
 
           <div class="form-group">
@@ -680,7 +717,8 @@
   <!-- Modal para Programar Nueva Cuota Financiera -->
   <div class="modal-overlay" id="modalCrearCuota">
     <div class="modal-card" style="max-width: 480px; text-align: left;">
-      <h3 style="color: var(--color-gold); font-family: var(--font-heading); font-size: 1.3rem; margin-bottom: 0.5rem; text-align: center;">
+      <h3
+        style="color: var(--color-gold); font-family: var(--font-heading); font-size: 1.3rem; margin-bottom: 0.5rem; text-align: center;">
         <i class="fa-solid fa-calendar-plus"></i> Programar Nueva Cuota Financiera
       </h3>
       <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1.2rem; text-align: center;">
@@ -690,13 +728,15 @@
       <form id="formCrearCuota">
         <div class="form-group">
           <label class="form-label" for="newCuotaNombre">Nombre o Concepto de la Cuota *</label>
-          <input type="text" id="newCuotaNombre" class="form-control" placeholder="Ej: Cuota Inicial Traje de Baile" required>
+          <input type="text" id="newCuotaNombre" class="form-control" placeholder="Ej: Cuota Inicial Traje de Baile"
+            required>
         </div>
 
         <div class="grid-2">
           <div class="form-group">
             <label class="form-label" for="newCuotaFechaLimite">Fecha Límite de Pago *</label>
-            <input type="date" id="newCuotaFechaLimite" class="form-control" required style="background: var(--bg-card); color: var(--color-white);">
+            <input type="date" id="newCuotaFechaLimite" class="form-control" required
+              style="background: var(--bg-card); color: var(--color-white);">
           </div>
 
           <div class="form-group">
@@ -720,7 +760,8 @@
   <!-- Modal Registrar Pago Manual de Cuota / Multa -->
   <div class="modal-overlay" id="modalPagoManual">
     <div class="modal-card" style="max-width: 520px; text-align: left;">
-      <h3 style="color: var(--color-gold); font-family: var(--font-heading); font-size: 1.3rem; margin-bottom: 0.5rem; text-align: center;">
+      <h3
+        style="color: var(--color-gold); font-family: var(--font-heading); font-size: 1.3rem; margin-bottom: 0.5rem; text-align: center;">
         <i class="fa-solid fa-hand-holding-dollar"></i> Registro Manual de Pago (Tesorería)
       </h3>
       <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1.2rem; text-align: center;">
@@ -730,13 +771,15 @@
       <form id="formPagoManual">
         <div class="form-group">
           <label class="form-label" for="manualPagoFraterno">Seleccionar Fraterno *</label>
-          <select id="manualPagoFraterno" class="form-control" required style="background: var(--bg-card); color: var(--color-white);"></select>
+          <select id="manualPagoFraterno" class="form-control" required
+            style="background: var(--bg-card); color: var(--color-white);"></select>
         </div>
 
         <div class="grid-2">
           <div class="form-group">
             <label class="form-label" for="manualPagoTipo">Tipo de Registro *</label>
-            <select id="manualPagoTipo" class="form-control" required style="background: var(--bg-card); color: var(--color-white);">
+            <select id="manualPagoTipo" class="form-control" required
+              style="background: var(--bg-card); color: var(--color-white);">
               <option value="CUOTA">💳 Pago de Cuota Programada</option>
               <option value="MULTA">⚠️ Pago de Multa por Asistencia</option>
             </select>
@@ -744,14 +787,16 @@
 
           <div class="form-group" id="groupManualCuotaSelect">
             <label class="form-label" for="manualPagoCuotaSelect">Cuota Programada *</label>
-            <select id="manualPagoCuotaSelect" class="form-control" style="background: var(--bg-card); color: var(--color-white);"></select>
+            <select id="manualPagoCuotaSelect" class="form-control"
+              style="background: var(--bg-card); color: var(--color-white);"></select>
           </div>
         </div>
 
         <div class="grid-2">
           <div class="form-group">
             <label class="form-label" for="manualPagoFecha">Fecha del Pago *</label>
-            <input type="date" id="manualPagoFecha" class="form-control" required style="background: var(--bg-card); color: var(--color-white);">
+            <input type="date" id="manualPagoFecha" class="form-control" required
+              style="background: var(--bg-card); color: var(--color-white);">
           </div>
 
           <div class="form-group">
@@ -762,7 +807,26 @@
 
         <div class="form-group">
           <label class="form-label" for="manualPagoConcepto">Detalle / Concepto u Observación</label>
-          <input type="text" id="manualPagoConcepto" class="form-control" placeholder="Ej: Pago de Cuota Inicial abonado en efectivo">
+          <input type="text" id="manualPagoConcepto" class="form-control"
+            placeholder="Ej: Pago de Cuota Inicial abonado en efectivo">
+        </div>
+
+        <div class="grid-2">
+          <div class="form-group">
+            <label class="form-label" for="manualPagoNumRecibo"><i class="fa-solid fa-hashtag"></i> Número de Recibo
+              *</label>
+            <input type="text" id="manualPagoNumRecibo" class="form-control" placeholder="Ej: REC-001, 00123..."
+              required style="background: var(--bg-card); color: var(--color-white);">
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="manualPagoMetodo"><i class="fa-solid fa-credit-card"></i> Método de Pago
+              *</label>
+            <select id="manualPagoMetodo" class="form-control" required
+              style="background: var(--bg-card); color: var(--color-white);">
+              <option value="Efectivo">💵 Efectivo</option>
+              <option value="Transferencia/QR">📲 Transferencia / QR</option>
+            </select>
+          </div>
         </div>
 
         <div style="display: flex; gap: 0.8rem; margin-top: 1.2rem;">
@@ -777,6 +841,7 @@
     </div>
   </div>
 
-  <script src="app.js"></script>
+  <script type="module" src="app.js"></script>
 </body>
+
 </html>

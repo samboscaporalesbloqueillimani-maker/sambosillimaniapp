@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -8,6 +9,7 @@
   <!-- FontAwesome Icons -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
+
 <body>
 
   <!-- Toast Notification Container -->
@@ -18,9 +20,9 @@
     <div class="welcome-emblem-container">
       <img src="escudo.png" alt="Escudo Sambos Caporales Bloque Illimani" class="escudo-oficial">
     </div>
-    
+
     <div class="tricolor-bar"></div>
-    
+
     <h1 class="welcome-title">Sambos Caporales</h1>
     <p class="welcome-subtitle">Bloque Illimani • La Paz</p>
 
@@ -32,13 +34,15 @@
   <!-- Contenedor Principal de Login -->
   <div style="min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 2rem 1rem;">
     <div class="card" style="max-width: 460px; width: 100%; text-align: center; border-color: rgba(255, 215, 0, 0.4);">
-      
+
       <div style="margin-bottom: 1.5rem;">
         <div style="margin-bottom: 1rem;">
           <img src="escudo.png" alt="Escudo Sambos Caporales" class="escudo-oficial" style="max-width: 110px;">
         </div>
-        <h2 style="font-family: var(--font-heading); font-size: 1.6rem; color: var(--color-white);">Acceso Fraternidad</h2>
-        <p style="color: var(--text-muted); font-size: 0.9rem;">Ingrese su número de Carnet de Identidad para ingresar</p>
+        <h2 style="font-family: var(--font-heading); font-size: 1.6rem; color: var(--color-white);">Acceso Fraternidad
+        </h2>
+        <p style="color: var(--text-muted); font-size: 0.9rem;">Ingrese su número de Carnet de Identidad para ingresar
+        </p>
       </div>
 
       <form id="loginForm">
@@ -47,14 +51,16 @@
           <input type="text" id="loginCI" class="form-control" placeholder="Ingrese su número de CI..." required>
         </div>
 
-        <button type="submit" class="btn btn-gold" style="width: 100%; padding: 0.9rem; font-size: 1.1rem; margin-top: 0.5rem;">
+        <button type="submit" class="btn btn-gold"
+          style="width: 100%; padding: 0.9rem; font-size: 1.1rem; margin-top: 0.5rem;">
           <i class="fa-solid fa-right-to-bracket"></i> Ingresar al Sistema
         </button>
       </form>
 
       <!-- Botón Secundario de Autoregistro para Nuevos Fraternos -->
       <div style="margin-top: 1.2rem;">
-        <button type="button" class="btn btn-outline" id="btnOpenRegisterModal" style="width: 100%; border-color: var(--color-gold); color: var(--color-gold); font-weight: 700; padding: 0.8rem;">
+        <button type="button" class="btn btn-outline" id="btnOpenRegisterModal"
+          style="width: 100%; border-color: var(--color-gold); color: var(--color-gold); font-weight: 700; padding: 0.8rem;">
           <i class="fa-solid fa-user-plus"></i> ✨ Registrarse por primera vez / Nuevo Fraterno
         </button>
       </div>
@@ -66,11 +72,13 @@
   <div class="modal-overlay" id="registerModal">
     <div class="modal-card" style="max-width: 620px; text-align: left; max-height: 90vh; overflow-y: auto;">
       <div style="text-align: center; margin-bottom: 1.2rem;">
-        <img src="escudo.png" alt="Escudo Sambos Caporales" class="escudo-oficial" style="max-width: 85px; margin-bottom: 0.5rem;">
+        <img src="escudo.png" alt="Escudo Sambos Caporales" class="escudo-oficial"
+          style="max-width: 85px; margin-bottom: 0.5rem;">
         <h2 style="color: var(--color-gold); font-family: var(--font-heading); font-size: 1.4rem;">
           Formulario de Inscripción de Nuevos Fraternos
         </h2>
-        <p style="color: var(--text-muted); font-size: 0.85rem;">Su registro ingresará en estado "Pendiente de Aprobación" hasta la evaluación del Administrador.</p>
+        <p style="color: var(--text-muted); font-size: 0.85rem;">Su registro ingresará en estado "Pendiente de
+          Aprobación" hasta la evaluación del Administrador.</p>
       </div>
 
       <form id="formRegister">
@@ -100,12 +108,14 @@
 
         <div class="form-group">
           <label class="form-label" for="regDireccion">Dirección de Domicilio *</label>
-          <input type="text" id="regDireccion" class="form-control" placeholder="Ej: Av. Illimani #500, La Paz" required>
+          <input type="text" id="regDireccion" class="form-control" placeholder="Ej: Av. Illimani #500, La Paz"
+            required>
         </div>
 
         <div class="form-group">
           <label class="form-label" for="regContactoEmergencia">Contacto de Emergencia (Nombre y Teléfono) *</label>
-          <input type="text" id="regContactoEmergencia" class="form-control" placeholder="Ej: Madre: Ana Pérez - 77654321" required>
+          <input type="text" id="regContactoEmergencia" class="form-control"
+            placeholder="Ej: Madre: Ana Pérez - 77654321" required>
         </div>
 
         <div class="grid-2">
@@ -123,21 +133,24 @@
           <div class="form-group">
             <label class="form-label" for="regAnioIngreso">Año de Ingreso *</label>
             <input type="number" id="regAnioIngreso" class="form-control" min="1990" max="2026" value="2026" required>
-            <span style="font-size: 0.75rem; color: var(--color-gold); display: block; margin-top: 0.2rem;" id="regCategoriaPreview">
+            <span style="font-size: 0.75rem; color: var(--color-gold); display: block; margin-top: 0.2rem;"
+              id="regCategoriaPreview">
               Categoría evaluada: <strong>Nuevo</strong>
             </span>
           </div>
         </div>
 
         <!-- Fotografía Obligatoria del Postulante en Base64 -->
-        <div class="form-group" style="background: rgba(255,255,255,0.03); border: 1px dashed var(--color-gold); border-radius: 12px; padding: 1rem; text-align: center;">
+        <div class="form-group"
+          style="background: rgba(255,255,255,0.03); border: 1px dashed var(--color-gold); border-radius: 12px; padding: 1rem; text-align: center;">
           <label class="form-label" style="color: var(--color-gold); font-weight: 700;">
             <i class="fa-solid fa-camera"></i> Fotografía Obligatoria del Fraterno (Base64) *
           </label>
           <div class="upload-preview-box" id="upload-preview-avatar" style="margin-bottom: 0.8rem;">
             <i class="fa-solid fa-user-astronaut" style="font-size: 3rem; color: #3a4759;"></i>
           </div>
-          <input type="file" id="regFotoFile" class="form-control" accept="image/*" style="display: none;" onchange="previsualizarFotoRegistro(this)">
+          <input type="file" id="regFotoFile" class="form-control" accept="image/*" style="display: none;"
+            onchange="previsualizarFotoRegistro(this)">
           <button type="button" class="btn btn-secondary" onclick="document.getElementById('regFotoFile').click()">
             <i class="fa-solid fa-image"></i> Seleccionar Imagen de Perfil
           </button>
@@ -188,7 +201,8 @@
         <!-- Campo Obligatorio de Origen (Bolivia / Extranjero) -->
         <div class="grid-2">
           <div class="form-group">
-            <label class="form-label" for="regOrigen"><i class="fa-solid fa-earth-americas"></i> Origen del Fraterno *</label>
+            <label class="form-label" for="regOrigen"><i class="fa-solid fa-earth-americas"></i> Origen del Fraterno
+              *</label>
             <select id="regOrigen" class="form-control" required>
               <option value="Bolivia" selected>Bolivia</option>
               <option value="Extranjero">Extranjero</option>
@@ -206,8 +220,9 @@
           <label class="form-label" for="regFichaMedica" style="color: #FF6B6B;">
             <i class="fa-solid fa-notes-medical"></i> Ficha Médica Obligatoria (Alergias, Medicación, etc.) *
           </label>
-          <textarea id="regFichaMedica" class="form-control" rows="2" placeholder="Declare si padece asma, alergias, o lesiones física..." required></textarea>
-          
+          <textarea id="regFichaMedica" class="form-control" rows="2"
+            placeholder="Declare si padece asma, alergias, o lesiones física..." required></textarea>
+
           <div style="margin-top: 0.4rem; display: flex; align-items: center; gap: 0.5rem;">
             <input type="checkbox" id="chkNoCondition" style="cursor: pointer;">
             <label for="chkNoCondition" style="font-size: 0.85rem; color: var(--text-muted); cursor: pointer;">
@@ -228,6 +243,7 @@
     </div>
   </div>
 
-  <script src="app.js"></script>
+  <script type="module" src="app.js"></script>
 </body>
+
 </html>

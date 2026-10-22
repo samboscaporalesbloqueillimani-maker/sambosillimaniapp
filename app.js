@@ -4,7 +4,101 @@
    Módulo Exclusivo de Admisiones en Panel Admin (Aprobar / Rechazar)
    Cuentas Corrientes Separadas, QR & Reportes Financieros en CSV
    ========================================================================== */
+// 1. Importar Firebase desde la web
+import { initializeApp } from "https://gstatic.com";
+import {
+  getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword
+// 2. Tus credenciales exclusivas de Firebase
+const firebaseConfig = {
+    apiKey: "AIzaSyDoSpKwQTfQ_-VUdqoBuVSyyXYYFgubdMs",
+    authDomain: "sambosillimani.firebaseapp.com",
+    projectId: "sambosillimani",
+    storageBucket: "sambosillimani.firebasestorage.app",
+    messagingSenderId: "329077302554",
+    appId: "1:329077302554:web:f48f6e6051ad0d4f2638a3",
+    measurementId: "G-14NZVHZYKT"
+  };
 
+// 3. Inicializar Firebase en tu proyecto
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+
+// 4. Guardar las funciones globalmente para que tus botones HTML puedan usarlas
+window.registrarUsuario = function (email, password) {
+  createUserWithEmailAndPassword(auth, email, password)
+    .then(() => {
+      alert("¡Usuario registrado con éxito en la nube de Firebase!");
+      window.location.href = "index.html";
+    })
+    .catch((error) => alert("Error al registrar: " + error.message));
+};
+
+window.iniciarSesion = function (email, password) {
+  signInWithEmailAndPassword(auth, email, password)
+    .then(() => {
+      alert("¡Bienvenido!");
+      window.location.href = "mi-perfil.html";
+    })
+    .catch((error) => alert("Error al ingresar: " + error.message));
+};
+// Función nueva para transformar el Carnet de Identidad en el correo interno de Firebase
+window.loginConCarnet = function (carnetIngresado) {
+  if (!carnetIngresado) {
+    alert("Por favor, ingresa tu número de carnet.");
+    return;
+  }
+
+  // Convertimos el carnet al formato virtual (igual que en el registro)
+  const emailVirtual = `${carnetIngresado.trim()}@sambos.com`;
+  const passwordVirtual = `${carnetIngresado.trim().substring(0, 4)}sambos`;
+
+  // Llamamos a la función de inicio de sesión oficial de Firebase
+  window.iniciarSesion(emailVirtual, passwordVirtual);
+};
+
+// 5. Observador para mantener la sesión abierta en cualquier PC o celular automáticamente
+onAuthStateChanged(auth, (user) => {
+  if (user) {
+    console.log("Sesión activa:", user.email);
+  } else {
+    // ==========================================================================
+    // CAPTURA DE FORMULARIOS - CONEXIÓN CON TU INDEX.HTML
+    // ==========================================================================
+
+    // Evento para capturar el Formulario de REGISTRO (Modal de inscripción)
+    const formRegister = document.getElementById("formRegister");
+    if (formRegister) {
+      formRegister.addEventListener("submit", (e) => {
+        e.preventDefault();
+        // Usamos 'regCI' que es el ID exacto de tu input de registro
+        const carnetInput = document.getElementById("regCI")?.value.trim() || "";
+
+        if (carnetInput) {
+          const emailVirtual = `${carnetInput}@sambos.com`;
+          const passwordVirtual = `${carnetInput.substring(0, 4)}sambos`;
+          window.registrarUsuario(emailVirtual, passwordVirtual);
+        } else {
+          alert("Por favor, ingresa tu número de carnet de identidad.");
+        }
+      });
+    }
+
+    // Evento para capturar el Formulario de INICIO DE SESIÓN (Login principal)
+    const formLogin = document.getElementById("loginForm"); // Vinculado a tu id="loginForm"
+    if (formLogin) {
+      formLogin.addEventListener("submit", (e) => {
+        e.preventDefault();
+        // Usamos 'loginCI' que es el ID de tu input de acceso
+        const carnetLogin = document.getElementById("loginCI")?.value.trim() || "";
+        window.loginConCarnet(carnetLogin);
+      });
+      // Si intentan entrar a páginas privadas sin loguearse, los saca al login
+      const paginaActual = window.location.pathname;
+      if (paginaActual.includes("mi-perfil.html") || paginaActual.includes("administrador.html")) {
+        window.location.href = "index.html";
+      }
+    }
+  });
 // --------------------------------------------------------------------------
 // 1. CONSTANTES Y CONFIGURACIÓN GENERAL
 // --------------------------------------------------------------------------
@@ -930,77 +1024,6 @@ function otorgarLicencia(ci, motivo) {
   }
 }
 
-function renderReceiptsInbox() {
-  const container = document.getElementById('receiptsInboxContainer');
-  if (!container) return;
-
-  const fraternos = getFraternos();
-  let pendingReceipts = [];
-
-  fraternos.forEach(f => {
-    if (f.pagos && Array.isArray(f.pagos)) {
-      f.pagos.forEach(p => {
-        if (p.reciboBase64) {
-          pendingReceipts.push({ ...p, fraternoNombre: f.nombre, fraternoCI: f.ci });
-        }
-      });
-    }
-  });
-
-  if (pendingReceipts.length === 0) {
-    container.innerHTML = `
-      <div style="text-align: center; padding: 2rem; color: var(--text-muted);">
-        <i class="fa-solid fa-check-circle" style="font-size: 2.5rem; color: #2ECC71; margin-bottom: 0.5rem;"></i>
-        <p>No hay comprobantes pendientes de validación.</p>
-      </div>
-    `;
-    return;
-  }
-
-  container.innerHTML = pendingReceipts.map(rec => `
-    <div style="background: rgba(255,255,255,0.03); border: 1px solid var(--border-glass); border-radius: 12px; padding: 1.2rem; margin-bottom: 1rem; display: flex; gap: 1.2rem; align-items: center; flex-wrap: wrap;">
-      <img src="${rec.reciboBase64}" alt="Comprobante Base64" style="max-width: 140px; max-height: 120px; border-radius: 8px; border: 1px solid var(--border-glass); object-fit: cover;">
-      <div style="flex: 1;">
-        <h4 style="color: var(--color-white); font-weight: 700; font-size: 1.1rem;">
-          ${rec.fraternoNombre} <span style="font-size: 0.85rem; color: var(--color-gold);">(CI: ${rec.fraternoCI})</span>
-        </h4>
-        <div style="font-size: 1.3rem; font-weight: 800; color: #2ECC71; margin: 0.3rem 0;">Bs ${rec.monto}</div>
-        <div style="font-size: 0.8rem; color: var(--text-muted);">
-          Fecha: ${rec.fecha || 'Reciente'} • Estado: <strong style="color: ${rec.status === 'aprobado' ? '#2ECC71' : rec.status === 'rechazado' ? '#FF6B6B' : 'var(--color-gold)'}">${(rec.status || 'Pendiente').toUpperCase()}</strong>
-        </div>
-      </div>
-      <div style="display: flex; flex-direction: column; gap: 0.5rem; min-width: 150px;">
-        <button class="btn btn-gold" style="padding: 0.5rem 1rem; font-size: 0.85rem;" onclick="evaluarComprobante('${rec.fraternoCI}', ${rec.id}, 'aprobar')">
-          <i class="fa-solid fa-check"></i> Aprobar Pago
-        </button>
-        <button class="btn btn-danger" style="padding: 0.5rem 1rem; font-size: 0.85rem;" onclick="evaluarComprobante('${rec.fraternoCI}', ${rec.id}, 'rechazar')">
-          <i class="fa-solid fa-xmark"></i> Rechazar
-        </button>
-      </div>
-    </div>
-  `).join('');
-}
-
-function evaluarComprobante(ci, pagoId, accion) {
-  let fraternos = getFraternos();
-  const dancer = fraternos.find(f => f.ci === ci);
-
-  if (dancer && dancer.pagos) {
-    const pago = dancer.pagos.find(p => p.id === pagoId || p.monto);
-    if (pago) {
-      if (accion === 'aprobar') {
-        pago.status = 'aprobado';
-        dancer.deuda = Math.max(0, (dancer.deuda || 0) - (pago.monto || 0));
-        showToast('Pago Aprobado', `Se dedujo Bs ${pago.monto} de la deuda de ${dancer.nombre}.`, 'success');
-      } else {
-        pago.status = 'rechazado';
-        showToast('Pago Rechazado', `Se rechazó el comprobante por Bs ${pago.monto}.`, 'error');
-      }
-      saveFraternos(fraternos);
-      renderAdminData();
-    }
-  }
-}
 
 function showMedicalAlertModal(dancer) {
   const modal = document.getElementById('medicalAlertModal');
@@ -1499,9 +1522,16 @@ function guardarPagoManual(e) {
   const fecha = document.getElementById('manualPagoFecha').value || new Date().toLocaleDateString();
   const monto = parseFloat(document.getElementById('manualPagoMonto').value) || 0;
   const conceptoInput = document.getElementById('manualPagoConcepto').value.trim();
+  const numRecibo = document.getElementById('manualPagoNumRecibo').value.trim();
+  const metodoPago = document.getElementById('manualPagoMetodo').value;
 
   if (!ci || monto <= 0) {
     showToast('Datos Inválidos', 'Seleccione un fraterno e ingrese un monto válido.', 'error');
+    return;
+  }
+
+  if (!numRecibo) {
+    showToast('Número de Recibo Requerido', 'Ingrese el número de recibo para continuar.', 'error');
     return;
   }
 
@@ -1528,7 +1558,8 @@ function guardarPagoManual(e) {
     concepto: conceptoFinal,
     monto: monto,
     fecha: fecha,
-    metodo: "Cobro Manual (Tesorería)",
+    metodo: metodoPago,
+    numero_recibo: numRecibo,
     status: "aprobado",
     registradoPor: "Encargado de Pagos"
   };
@@ -1543,8 +1574,9 @@ function guardarPagoManual(e) {
   closeModalPagoManual();
   renderAdminData();
 
-  showToast('Pago Registrado', `Se registró el pago manual de Bs ${monto} (${tipo === 'CUOTA' ? 'Cuota' : 'Multa'}) para ${dancer.nombre}.`, 'success', 4000);
+  showToast('Pago Registrado', `Se registró el pago Bs ${monto} (${tipo === 'CUOTA' ? 'Cuota' : 'Multa'}) — Recibo #${numRecibo} — ${metodoPago} — para ${dancer.nombre}.`, 'success', 5000);
 }
+
 
 function renderTablaCuotasProgramadas() {
   const tbody = document.getElementById('tablaCuotasProgramadasBody');
@@ -2161,3 +2193,28 @@ document.addEventListener('DOMContentLoaded', () => {
     initWelcomeAndLogin();
   }
 });
+// Capturar el envío del formulario de registro con Carnet de Identidad (CI)
+const formRegister = document.getElementById("formRegister");
+if (formRegister) {
+  formRegister.addEventListener("submit", (e) => {
+    e.preventDefault(); // Evita que la página se recargue
+
+    // 1. Buscamos el input donde el usuario escribe su número de carnet
+    // (Asegúrate de que en tu index.html el input tenga id="registerCI")
+    const carnetInput = document.getElementById("registerCI")?.value.trim() || "";
+
+    if (carnetInput) {
+      // 2. Creamos un correo virtual interno para Firebase usando su carnet
+      const emailVirtual = `${carnetInput}@sambos.com`;
+
+      // 3. Creamos una contraseña por defecto (ej: los primeros 4 dígitos + sambos)
+      // Firebase exige un mínimo de 6 caracteres para las contraseñas
+      const passwordVirtual = `${carnetInput.substring(0, 4)}sambos`;
+
+      // 4. Enviamos los datos simulados a la nube de Firebase
+      window.registrarUsuario(emailVirtual, passwordVirtual);
+    } else {
+      alert("Por favor, ingresa tu número de carnet de identidad.");
+    }
+  });
+}
