@@ -6,18 +6,17 @@
    ========================================================================== */
 // 1. Importar Firebase desde la web
 import { initializeApp } from "https://gstatic.com";
-import {
-  getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword
+import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://gstatic.com";
 // 2. Tus credenciales exclusivas de Firebase
 const firebaseConfig = {
-    apiKey: "AIzaSyDoSpKwQTfQ_-VUdqoBuVSyyXYYFgubdMs",
-    authDomain: "sambosillimani.firebaseapp.com",
-    projectId: "sambosillimani",
-    storageBucket: "sambosillimani.firebasestorage.app",
-    messagingSenderId: "329077302554",
-    appId: "1:329077302554:web:f48f6e6051ad0d4f2638a3",
-    measurementId: "G-14NZVHZYKT"
-  };
+  apiKey: "AIzaSyDoSpKwQTfQ_-VUdqoBuVSyyXYYFgubdMs",
+  authDomain: "sambosillimani.firebaseapp.com",
+  projectId: "sambosillimani",
+  storageBucket: "sambosillimani.firebasestorage.app",
+  messagingSenderId: "329077302554",
+  appId: "1:329077302554:web:f48f6e6051ad0d4f2638a3",
+  measurementId: "G-14NZVHZYKT"
+};
 
 // 3. Inicializar Firebase en tu proyecto
 const app = initializeApp(firebaseConfig);
