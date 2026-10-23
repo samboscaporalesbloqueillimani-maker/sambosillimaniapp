@@ -4,10 +4,9 @@
    Módulo Exclusivo de Admisiones en Panel Admin (Aprobar / Rechazar)
    Cuentas Corrientes Separadas, QR & Reportes Financieros en CSV
    ========================================================================== */
-// 1. Importar Firebase desde la web
-import { initializeApp } from "https://gstatic.com";
-import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://gstatic.com";
-// 2. Tus credenciales exclusivas de Firebase
+// --------------------------------------------------------------------------
+// CONFIGURACIÓN DE FIREBASE (Carga Asíncrona Opcional y Segura)
+// --------------------------------------------------------------------------
 const firebaseConfig = {
   apiKey: "AIzaSyDoSpKwQTfQ_-VUdqoBuVSyyXYYFgubdMs",
   authDomain: "sambosillimani.firebaseapp.com",
@@ -18,87 +17,54 @@ const firebaseConfig = {
   measurementId: "G-14NZVHZYKT"
 };
 
-// 3. Inicializar Firebase en tu proyecto
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
+let firebaseApp = null;
+let firebaseAuth = null;
 
-// 4. Guardar las funciones globalmente para que tus botones HTML puedan usarlas
-window.registrarUsuario = function (email, password) {
-  createUserWithEmailAndPassword(auth, email, password)
-    .then(() => {
-      alert("¡Usuario registrado con éxito en la nube de Firebase!");
-      window.location.href = "index.html";
-    })
-    .catch((error) => alert("Error al registrar: " + error.message));
-};
+// Carga opcional y no bloqueante de Firebase para no interrumpir el flujo del sistema
+async function initFirebaseOptional() {
+  try {
+    const { initializeApp } = await import("https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js");
+    const { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged } = await import("https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js");
 
-window.iniciarSesion = function (email, password) {
-  signInWithEmailAndPassword(auth, email, password)
-    .then(() => {
-      alert("¡Bienvenido!");
-      window.location.href = "mi-perfil.html";
-    })
-    .catch((error) => alert("Error al ingresar: " + error.message));
-};
-// Función nueva para transformar el Carnet de Identidad en el correo interno de Firebase
-window.loginConCarnet = function (carnetIngresado) {
-  if (!carnetIngresado) {
-    alert("Por favor, ingresa tu número de carnet.");
-    return;
-  }
+    firebaseApp = initializeApp(firebaseConfig);
+    firebaseAuth = getAuth(firebaseApp);
 
-  // Convertimos el carnet al formato virtual (igual que en el registro)
-  const emailVirtual = `${carnetIngresado.trim()}@sambos.com`;
-  const passwordVirtual = `${carnetIngresado.trim().substring(0, 4)}sambos`;
+    window.registrarUsuario = function (email, password) {
+      if (!firebaseAuth) return;
+      createUserWithEmailAndPassword(firebaseAuth, email, password)
+        .then(() => {
+          showToast("Firebase Cloud", "¡Usuario sincronizado en la nube de Firebase!", "success");
+        })
+        .catch((error) => console.warn("Firebase Auth Error:", error.message));
+    };
 
-  // Llamamos a la función de inicio de sesión oficial de Firebase
-  window.iniciarSesion(emailVirtual, passwordVirtual);
-};
+    window.iniciarSesion = function (email, password) {
+      if (!firebaseAuth) return;
+      signInWithEmailAndPassword(firebaseAuth, email, password)
+        .then(() => {
+          console.log("Sesión sincronizada en Firebase Cloud");
+        })
+        .catch((error) => console.warn("Firebase Auth Error:", error.message));
+    };
 
-// 5. Observador para mantener la sesión abierta en cualquier PC o celular automáticamente
-onAuthStateChanged(auth, (user) => {
-  if (user) {
-    console.log("Sesión activa:", user.email);
-  } else {
-    // ==========================================================================
-    // CAPTURA DE FORMULARIOS - CONEXIÓN CON TU INDEX.HTML
-    // ==========================================================================
+    window.loginConCarnet = function (carnetIngresado) {
+      if (!carnetIngresado || !firebaseAuth) return;
+      const emailVirtual = `${carnetIngresado.trim()}@sambos.com`;
+      const passwordVirtual = `${carnetIngresado.trim().substring(0, 4)}sambos`;
+      window.iniciarSesion(emailVirtual, passwordVirtual);
+    };
 
-    // Evento para capturar el Formulario de REGISTRO (Modal de inscripción)
-    const formRegister = document.getElementById("formRegister");
-    if (formRegister) {
-      formRegister.addEventListener("submit", (e) => {
-        e.preventDefault();
-        // Usamos 'regCI' que es el ID exacto de tu input de registro
-        const carnetInput = document.getElementById("regCI")?.value.trim() || "";
-
-        if (carnetInput) {
-          const emailVirtual = `${carnetInput}@sambos.com`;
-          const passwordVirtual = `${carnetInput.substring(0, 4)}sambos`;
-          window.registrarUsuario(emailVirtual, passwordVirtual);
-        } else {
-          alert("Por favor, ingresa tu número de carnet de identidad.");
-        }
-      });
-    }
-
-    // Evento para capturar el Formulario de INICIO DE SESIÓN (Login principal)
-    const formLogin = document.getElementById("loginForm"); // Vinculado a tu id="loginForm"
-    if (formLogin) {
-      formLogin.addEventListener("submit", (e) => {
-        e.preventDefault();
-        // Usamos 'loginCI' que es el ID de tu input de acceso
-        const carnetLogin = document.getElementById("loginCI")?.value.trim() || "";
-        window.loginConCarnet(carnetLogin);
-      });
-      // Si intentan entrar a páginas privadas sin loguearse, los saca al login
-      const paginaActual = window.location.pathname;
-      if (paginaActual.includes("mi-perfil.html") || paginaActual.includes("administrador.html")) {
-        window.location.href = "index.html";
+    onAuthStateChanged(firebaseAuth, (user) => {
+      if (user) {
+        console.log("Sesión activa en Firebase:", user.email);
       }
-    }
+    });
+  } catch (err) {
+    console.info("Modo local autónomo activo.");
   }
-});
+}
+
+initFirebaseOptional();
 
 // 1. CONSTANTES Y CONFIGURACIÓN GENERAL
     // --------------------------------------------------------------------------
@@ -300,6 +266,21 @@ onAuthStateChanged(auth, (user) => {
     // --------------------------------------------------------------------------
     // 3. PANTALLA PRINCIPAL: LOGIN POR CARNET & AUTOREGISTRO CON FOTO (index.html)
     // --------------------------------------------------------------------------
+    function dismissWelcomeScreen() {
+      try {
+        playFolkloreFanfare();
+      } catch (e) { }
+      showToast('¡Fuerza, Fe y Devoción!', 'Bienvenido al Bloque Illimani', 'success', 3000);
+      const welcomeOverlay = document.getElementById('welcomeOverlay');
+      if (welcomeOverlay) {
+        welcomeOverlay.classList.add('fade-out');
+        setTimeout(() => {
+          welcomeOverlay.style.display = 'none';
+        }, 800);
+      }
+    }
+    window.dismissWelcomeScreen = dismissWelcomeScreen;
+
     function initWelcomeAndLogin() {
       const btnFuerza = document.getElementById('btnFuerza');
       const welcomeOverlay = document.getElementById('welcomeOverlay');
@@ -307,11 +288,7 @@ onAuthStateChanged(auth, (user) => {
       const loginCI = document.getElementById('loginCI');
 
       if (btnFuerza && welcomeOverlay) {
-        btnFuerza.addEventListener('click', () => {
-          playFolkloreFanfare();
-          showToast('¡Fuerza, Fe y Devoción!', 'Bienvenido al Bloque Illimani', 'success', 3000);
-          welcomeOverlay.classList.add('fade-out');
-        });
+        btnFuerza.addEventListener('click', dismissWelcomeScreen);
       }
 
       if (loginForm) {
