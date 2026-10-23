@@ -18,7 +18,8 @@ const firebaseConfig = {
 };
 
 let firebaseApp = null;
-let firebaseAuth = null;
+export let auth = null;
+
 
 // Carga opcional y no bloqueante de Firebase para no interrumpir el flujo del sistema
 async function initFirebaseOptional() {
@@ -27,7 +28,7 @@ async function initFirebaseOptional() {
     const { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged } = await import("https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js");
 
     firebaseApp = initializeApp(firebaseConfig);
-    firebaseAuth = getAuth(firebaseApp);
+    auth = getAuth(firebaseApp);
 
     window.registrarUsuario = function (email, password) {
       if (!firebaseAuth) return;
