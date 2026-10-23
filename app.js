@@ -4,9 +4,7 @@
    Módulo Exclusivo de Admisiones en Panel Admin (Aprobar / Rechazar)
    Cuentas Corrientes Separadas, QR & Reportes Financieros en CSV
    ========================================================================== */
-// --------------------------------------------------------------------------
-// CONFIGURACIÓN DE FIREBASE (Carga Asíncrona Opcional y Segura)
-// --------------------------------------------------------------------------
+
 const firebaseConfig = {
   apiKey: "AIzaSyDoSpKwQTfQ_-VUdqoBuVSyyXYYFgubdMs",
   authDomain: "sambosillimani.firebaseapp.com",
@@ -17,55 +15,48 @@ const firebaseConfig = {
   measurementId: "G-14NZVHZYKT"
 };
 
-let firebaseApp = null;
-let auth = null;
+// Inicialización global directa y compatible con cualquier navegador móvil
+firebase.initializeApp(firebaseConfig);
 
-
-// Carga opcional y no bloqueante de Firebase para no interrumpir el flujo del sistema
-async function initFirebaseOptional() {
-  try {
-    const { initializeApp } = await import("https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js");
-    const { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged } = await import("https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js");
-
-    firebaseApp = initializeApp(firebaseConfig);
-    auth = getAuth(firebaseApp);
-
-    window.registrarUsuario = function (email, password) {
-      if (!firebaseAuth) return;
-      createUserWithEmailAndPassword(auth, email, password)
-        .then(() => {
-          showToast("Firebase Cloud", "¡Usuario sincronizado en la nube de Firebase!", "success");
-        })
-        .catch((error) => console.warn("Firebase Auth Error:", error.message));
-    };
-
-    window.iniciarSesion = function (email, password) {
-      if (!firebaseAuth) return;
-      signInWithEmailAndPassword(auth, email, password)
-        .then(() => {
-          console.log("Sesión sincronizada en Firebase Cloud");
-        })
-        .catch((error) => console.warn("Firebase Auth Error:", error.message));
-    };
-
-    window.loginConCarnet = function (carnetIngresado) {
-      if (!carnetIngresado || !firebaseAuth) return;
-      const emailVirtual = `${carnetIngresado.trim()}@sambos.com`;
-      const passwordVirtual = `${carnetIngresado.trim().substring(0, 4)}sambos`;
-      window.iniciarSesion(emailVirtual, passwordVirtual);
-    };
-
-    onAuthStateChanged(firebaseAuth, (user) => {
-      if (user) {
-        console.log("Sesión activa en Firebase:", user.email);
-      }
+window.registrarUsuario = function (email, password) {
+  firebase.auth().createUserWithEmailAndPassword(email, password)
+    .then(() => {
+      showToast("Firebase Cloud", "¡Usuario sincronizado en la nube de Firebase!", "success");
+      setTimeout(() => {
+        window.location.href = "admin.html";
+      }, 1500);
+    })
+    .catch((error) => {
+      console.warn("Firebase Auth Error:", error.message);
+      alert("Error al registrar: " + error.message);
     });
-  } catch (err) {
-    console.info("Modo local autónomo activo.");
-  }
-}
+};
 
-initFirebaseOptional();
+window.iniciarSesion = function (email, password) {
+  firebase.auth().signInWithEmailAndPassword(email, password)
+    .then(() => {
+      console.log("Sesión sincronizada en Firebase Cloud");
+      window.location.href = "admin.html";
+    })
+    .catch((error) => {
+      console.warn("Firebase Auth Error:", error.message);
+      alert("Error al iniciar sesión: " + error.message);
+    });
+};
+
+window.loginConCarnet = function (carnetIngresado) {
+  if (!carnetIngresado) return;
+  const emailVirtual = `${carnetIngresado.trim()}@sambos.com`;
+  const passwordVirtual = `${carnetIngresado.trim().substring(0, 4)}sambos`;
+  window.iniciarSesion(emailVirtual, passwordVirtual);
+};
+
+firebase.auth().onAuthStateChanged((user) => {
+  if (user) {
+    console.log("Sesión activa en Firebase:", user.email);
+  }
+});
+
 
 // 1. CONSTANTES Y CONFIGURACIÓN GENERAL
 // --------------------------------------------------------------------------
