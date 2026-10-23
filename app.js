@@ -32,7 +32,7 @@ async function initFirebaseOptional() {
 
     window.registrarUsuario = function (email, password) {
       if (!firebaseAuth) return;
-      createUserWithEmailAndPassword(firebaseAuth, email, password)
+      createUserWithEmailAndPassword(auth, email, password)
         .then(() => {
           showToast("Firebase Cloud", "¡Usuario sincronizado en la nube de Firebase!", "success");
         })
@@ -41,7 +41,7 @@ async function initFirebaseOptional() {
 
     window.iniciarSesion = function (email, password) {
       if (!firebaseAuth) return;
-      signInWithEmailAndPassword(firebaseAuth, email, password)
+      signInWithEmailAndPassword(auth, email, password)
         .then(() => {
           console.log("Sesión sincronizada en Firebase Cloud");
         })
