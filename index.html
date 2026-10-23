@@ -26,7 +26,8 @@
     <h1 class="welcome-title">Sambos Caporales</h1>
     <p class="welcome-subtitle">Bloque Illimani • La Paz</p>
 
-    <button class="btn-fuerza" id="btnFuerza" onclick="window.dismissWelcomeScreen ? dismissWelcomeScreen() : (document.getElementById('welcomeOverlay').classList.add('fade-out'), setTimeout(() => document.getElementById('welcomeOverlay').style.display='none', 800))">
+    <button class="btn-fuerza" id="btnFuerza"
+      onclick="window.dismissWelcomeScreen ? dismissWelcomeScreen() : (document.getElementById('welcomeOverlay').classList.add('fade-out'), setTimeout(() => document.getElementById('welcomeOverlay').style.display='none', 800))">
       <i class="fa-solid fa-play"></i> ¡Fuerza, Fe y Devoción!
     </button>
   </div>
@@ -244,7 +245,7 @@
     </div>
   </div>
 
-  <script src="app.js"></script>
+  <script type="module" src="app.js"></script>
 </body>
 
 </html>
