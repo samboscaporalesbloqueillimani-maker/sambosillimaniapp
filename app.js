@@ -2415,7 +2415,10 @@ window.previsualizarFotoRegistro = previsualizarFotoRegistro;
 window.openRegisterModal = openRegisterModal;
 window.closeRegisterModal = closeRegisterModal;
 window.evaluarPostulante = evaluarPostulante;
-window.cambiarRolFraterno = cambiarRolFraterno;
+// REEMPLAZA LAS LÍNEAS 2418 Y 2419 POR ESTO:
+window.cambiarRolFraterno = function (ci, nuevoRol) {
+  console.log("Cambiando rol del fraterno:", ci, "a", nuevoRol);
+};
 window.showMedicalAlertModalByCI = showMedicalAlertModalByCI;
 window.closeMedicalModal = closeMedicalModal;
 window.initTabNavigation = initTabNavigation;
