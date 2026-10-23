@@ -18,7 +18,7 @@ const firebaseConfig = {
 };
 
 let firebaseApp = null;
-export let auth = null;
+let auth = null;
 
 
 // Carga opcional y no bloqueante de Firebase para no interrumpir el flujo del sistema
@@ -2104,7 +2104,6 @@ function renderAdminData() {
   renderRegistroMultasTable();
   renderRegistroCuotasTable();
   renderAdmisionesTable();
-  renderReceiptsInbox();
   renderChart(fraternos);
 }
 
