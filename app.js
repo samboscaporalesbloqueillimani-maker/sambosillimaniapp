@@ -9,7 +9,7 @@
 // --------------------------------------------------------------------------
 const firebaseConfig = {
   apiKey: "AIzaSyDoSpKwQTfQ_-VUdqoBuVSyyXYYFgubdMs",
-  authDomain: "sambosillimani.firebaseapp.com",
+  authDomain: "://firebaseapp.com",
   projectId: "sambosillimani",
   storageBucket: "sambosillimani.firebasestorage.app",
   messagingSenderId: "329077302554",
@@ -23,7 +23,7 @@ let auth = null;
 // Carga opcional y no bloqueante de Firebase para no interrumpir el flujo del sistema
 async function initFirebaseOptional() {
   try {
-    const { initializeApp } = await import("https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js");
+    const { initializeApp } = await import("https://gstatic.com");
     const { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged } = await import("https://gstatic.com");
 
     firebaseApp = initializeApp(firebaseConfig);
@@ -67,7 +67,6 @@ async function initFirebaseOptional() {
 }
 
 initFirebaseOptional();
-
 
 // 1. CONSTANTES Y CONFIGURACIÓN GENERAL
 // --------------------------------------------------------------------------
