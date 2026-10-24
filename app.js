@@ -9,7 +9,7 @@
 // --------------------------------------------------------------------------
 const firebaseConfig = {
   apiKey: "AIzaSyDoSpKwQTfQ_-VUdqoBuVSyyXYYFgubdMs",
-  authDomain: "://firebaseapp.com",
+  authDomain: "sambosillimani.firebaseapp.com",
   projectId: "sambosillimani",
   storageBucket: "sambosillimani.firebasestorage.app",
   messagingSenderId: "329077302554",
@@ -19,15 +19,56 @@ const firebaseConfig = {
 
 let firebaseApp = null;
 let auth = null;
+let database = null;
 
 // Carga opcional y no bloqueante de Firebase para no interrumpir el flujo del sistema
 async function initFirebaseOptional() {
   try {
     const { initializeApp } = await import("https://gstatic.com");
     const { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged } = await import("https://gstatic.com");
+    const { getDatabase, ref, set, onValue } = await import("https://gstatic.com");
 
     firebaseApp = initializeApp(firebaseConfig);
     auth = getAuth(firebaseApp);
+    database = getDatabase(firebaseApp);
+
+    // FUNCIÓN GLOBAL: Guardar fraterno o postulante en Realtime Database
+    window.guardarFraternoEnNube = function (ci, datos) {
+      if (!database) return Promise.reject("Base de datos deshabilitada");
+      return set(ref(database, 'fraternos/' + ci), datos);
+    };
+
+    // FUNCIÓN GLOBAL: Escuchar cambios en la nube e integrarlos a AppState
+    window.sincronizarConNube = function () {
+      if (!database) return;
+      onValue(ref(database, 'fraternos'), (snapshot) => {
+        const data = snapshot.val();
+        if (data) {
+          // Limpiamos los arreglos locales antes de llenarlos con lo real de la nube
+          AppState.fraternos = [];
+          AppState.postulantes = [];
+
+          Object.keys(data).forEach(ci => {
+            const miembro = data[ci];
+            if (miembro.estado === "Aprobado") {
+              AppState.fraternos.push(miembro);
+            } else {
+              AppState.postulantes.push(miembro);
+            }
+          });
+
+          // Actualiza las tablas visuales si las funciones de renderizado existen en la pantalla actual
+          if (typeof renderPostulantesTable === "function") renderPostulantesTable();
+          if (typeof renderFraternosTable === "function") renderFraternosTable();
+
+          // Respaldamos en el localStorage por seguridad local
+          localStorage.setItem("SAMBOS_MASTER_STATE", JSON.stringify(AppState));
+        }
+      });
+    };
+
+    // Activamos la escucha en tiempo real automática
+    window.sincronizarConNube();
 
     window.registrarUsuario = function (email, password) {
       if (!auth) return;
@@ -528,6 +569,13 @@ function handleSelfRegistration(e) {
     AppState.finanzas[ci] = { hitosPagados: {}, totalMultasPendientes: 0 };
     saveState();
 
+    // Sincronizar Administrador con Firebase Realtime Database
+    if (typeof window.guardarFraternoEnNube === "function") {
+      window.guardarFraternoEnNube(nuevoAdmin.ci, nuevoAdmin)
+        .then(() => console.log("Administrador sincronizado en Firebase"))
+        .catch((err) => console.warn("Error Firebase:", err));
+    }
+
     localStorage.setItem('fraterno_logueado', nuevoAdmin.ci);
     localStorage.setItem('sambos_active_user', JSON.stringify(nuevoAdmin));
 
@@ -563,6 +611,19 @@ function handleSelfRegistration(e) {
 
   AppState.postulantes.push(nuevoPostulante);
   saveState();
+  // Sincronizar Nuevo Fraterno con Firebase Realtime Database
+  if (typeof window.guardarFraternoEnNube === "function") {
+    window.guardarFraternoEnNube(nuevoPostulante.ci, nuevoPostulante)
+      .then(() => {
+        console.log("Postulante sincronizado en Firebase");
+        // Registrar también sus credenciales de acceso Auth por seguridad si lo deseas
+        if (typeof window.registrarUsuario === "function") {
+          const passwordVirtual = `${nuevoPostulante.ci.trim().substring(0, 4)}sambos`;
+          window.registrarUsuario(`${nuevoPostulante.ci.trim()}@sambos.com`, passwordVirtual);
+        }
+      })
+      .catch((err) => console.warn("Error Firebase Postulante:", err));
+  }
 
   closeRegisterModal();
   fotoRegistroBase64 = "";
