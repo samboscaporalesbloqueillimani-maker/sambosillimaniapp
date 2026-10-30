@@ -416,78 +416,151 @@ function previsualizarFotoRegistro(input) {
 
 // --------------------------------------------------------------------------
 // 4. AUTOREGISTRO DE NUEVO POSTULANTE / ADMIN CON FOTO Y ANTI-DUPLICADOS
+//    Guarda en Supabase (tabla fraterno) + localStorage como respaldo local
 // --------------------------------------------------------------------------
-function handleSelfRegistration(e) {
+async function handleSelfRegistration(e) {
   e.preventDefault();
 
-  const nombre = document.getElementById('regNombre').value.trim();
-  const ci = document.getElementById('regCI').value.trim();
-  const fechaNacimiento = document.getElementById('regFechaNacimiento').value.trim();
-  const telefono = document.getElementById('regTelefono').value.trim();
-  const direccion = document.getElementById('regDireccion').value.trim();
-  const contactoEmergencia = document.getElementById('regContactoEmergencia').value.trim();
-  const bloque = document.getElementById('regBloque').value;
-  const anioIngreso = parseInt(document.getElementById('regAnioIngreso').value, 10);
+  const nombre               = document.getElementById('regNombre').value.trim();
+  const ci                   = document.getElementById('regCI').value.trim();
+  const fechaNacimiento      = document.getElementById('regFechaNacimiento').value.trim();
+  const telefono             = document.getElementById('regTelefono').value.trim();
+  const direccion            = document.getElementById('regDireccion').value.trim();
+  const contactoEmergencia   = document.getElementById('regContactoEmergencia').value.trim();
+  const bloque               = document.getElementById('regBloque').value;
+  const anioIngreso          = parseInt(document.getElementById('regAnioIngreso').value, 10);
+  const tallaPolera          = document.getElementById('regTallaPolera').value;
+  const tallaChamarra        = document.getElementById('regTallaChamarra').value;
+  const tallaCanguro         = document.getElementById('regTallaCanguro').value;
+  const fichaMedica          = document.getElementById('regFichaMedica').value.trim();
+  const origenSel            = document.getElementById('regOrigen') ? document.getElementById('regOrigen').value : 'Bolivia';
 
-  // CONDICIÓN AUTOMÁTICA DE PRODUCCIÓN:
-  // Si la tabla de usuarios está vacía, la primera persona que se registre en la plataforma
-  // recibe automáticamente el rol de "Administrador" (admin) con acceso total inmediato.
-  // Los registros posteriores reciben el rol de "danzante" y quedan pendientes de aprobación.
-  const esPrimerUsuario = (!AppState.fraternos || AppState.fraternos.length === 0);
-  const roleType = esPrimerUsuario ? 'admin' : 'danzante';
-
-  const tallaPolera = document.getElementById('regTallaPolera').value;
-  const tallaChamarra = document.getElementById('regTallaChamarra').value;
-  const tallaCanguro = document.getElementById('regTallaCanguro').value;
-  const fichaMedica = document.getElementById('regFichaMedica').value.trim();
-
+  // Validación de campos obligatorios
   if (!nombre || !ci || !fechaNacimiento || !telefono || !direccion || !contactoEmergencia || !bloque || !anioIngreso || !fichaMedica) {
     showToast('Campos Incompletos', 'Por favor complete todos los campos requeridos.', 'error');
     return;
   }
 
-  // FOTO DE PERFIL EN BASE64 OBLIGATORIA
+  // Foto obligatoria
   if (!fotoRegistroBase64) {
     showToast('Fotografía Requerida', 'Exigencia de la Fraternidad: Debe seleccionar su fotografía de perfil.', 'error');
     return;
   }
 
-  // VALIDACIÓN ANTI-DUPLICADOS EN FRATERNOS Y POSTULANTES:
-  const existeOficial = AppState.fraternos.find(f => f.ci === ci);
-  const existePostulante = AppState.postulantes.find(p => p.ci === ci);
+  // CI debe ser numérico para la tabla de Supabase
+  const ciNum = parseInt(ci.replace(/\D/g, ''), 10);
+  if (isNaN(ciNum) || ciNum <= 0) {
+    showToast('CI Inválido', 'El número de Carnet de Identidad debe ser numérico.', 'error');
+    return;
+  }
 
+  // Validación anti-duplicados local
+  const existeOficial   = AppState.fraternos.find(f => String(f.ci) === String(ci));
+  const existePostulante = AppState.postulantes.find(p => String(p.ci) === String(ci));
   if (existeOficial || existePostulante) {
-    showToast('⚠️ Error de Duplicado', '⚠️ Error: Este número de carnet ya está registrado en el Bloque Illimani', 'error', 5000);
+    showToast('Error de Duplicado', 'Este número de carnet ya está registrado en el Bloque Illimani.', 'error', 5000);
     return;
   }
 
   const categoriaCalculada = calcularCategoria(anioIngreso);
+  const esPrimerUsuario    = (!AppState.fraternos || AppState.fraternos.length === 0);
+  const roleType           = esPrimerUsuario ? 'admin' : 'danzante';
 
-  // EL ADMINISTRADOR NO REQUIERE APROBACIÓN: Ingresa directamente como activo a AppState.fraternos
+  // ── Objeto mapeado exactamente a las columnas de la tabla `fraterno` en Supabase ──
+  const registroSupabase = {
+    nombre:                   nombre,
+    ci:                       ciNum,
+    fecha_de_nacimiento:      parseInt(fechaNacimiento.replace(/\D/g, ''), 10) || 0,
+    celular:                  parseInt(telefono.replace(/\D/g, ''), 10) || 0,
+    "dirección_de_domicilio": direccion,
+    "contacto_de_emegencia":  contactoEmergencia,
+    bloque_de_baile:          bloque,
+    "año_de_ingreso":         anioIngreso,
+    talla_polera:             tallaPolera,
+    talla_chamarra:           tallaChamarra,
+    talla_canguro:            tallaCanguro,
+    origen_fraterno:          origenSel,
+    ficha_medica:             fichaMedica
+  };
+
+  // ── Objeto local para AppState / localStorage ──
+  const registroLocal = {
+    ci:                   ci,
+    nombre:               nombre,
+    bloque:               bloque,
+    fechaNacimiento:      fechaNacimiento,
+    anioIngreso:          anioIngreso,
+    categoria:            categoriaCalculada,
+    direccion:            direccion,
+    rol:                  getRoleTitle(roleType),
+    roleType:             roleType,
+    tallas:               { polera: tallaPolera, chamarra: tallaChamarra, canguro: tallaCanguro },
+    pagos:                [],
+    deuda:                0,
+    ficha_medica:         fichaMedica,
+    telefono:             telefono,
+    contacto_emergencia:  contactoEmergencia,
+    foto:                 fotoRegistroBase64
+  };
+
+  // ── Deshabilitar botón mientras se guarda ──
+  const btnSubmit = e.target.querySelector('[type="submit"]');
+  if (btnSubmit) { btnSubmit.disabled = true; btnSubmit.textContent = 'Guardando...'; }
+
+  // ── GUARDAR EN SUPABASE ──
+  let supabaseOk = false;
+  let supabaseId = null;
+
+  if (supabaseClient) {
+    try {
+      // Verificar duplicado en Supabase antes de insertar
+      const { data: dupCheck, error: dupErr } = await supabaseClient
+        .from('fraterno')
+        .select('id, ci')
+        .eq('ci', ciNum)
+        .maybeSingle();
+
+      if (dupErr) {
+        console.warn('Supabase dupCheck error:', dupErr.message);
+      } else if (dupCheck) {
+        showToast('CI Duplicado en BD', 'Este CI ya existe en la base de datos de la fraternidad.', 'error', 5000);
+        if (btnSubmit) { btnSubmit.disabled = false; btnSubmit.textContent = 'Enviar Inscripción a Revisión'; }
+        return;
+      }
+
+      // Insertar en Supabase
+      const { data: insertData, error: insertErr } = await supabaseClient
+        .from('fraterno')
+        .insert([registroSupabase])
+        .select('id')
+        .single();
+
+      if (insertErr) {
+        console.warn('Supabase insert error:', insertErr.message);
+        showToast('Aviso BD', `No se pudo guardar en la nube: ${insertErr.message}. Registro guardado localmente.`, 'warning', 6000);
+      } else {
+        supabaseOk = true;
+        supabaseId = insertData?.id;
+        console.info('Fraterno guardado en Supabase. ID:', supabaseId);
+      }
+    } catch (err) {
+      console.warn('Supabase no disponible:', err.message);
+      showToast('Modo Offline', 'Registro guardado localmente. Se sincronizará cuando haya conexión.', 'warning', 5000);
+    }
+  } else {
+    showToast('Modo Offline', 'Supabase no inicializado. Registro guardado localmente.', 'warning', 4000);
+  }
+
+  // ── GUARDAR EN localStorage como respaldo / sesión activa ──
   if (roleType === 'admin') {
     const nuevoAdmin = {
-      id: "SB-" + String(AppState.fraternos.length + 1).padStart(2, '0'),
-      ci: ci,
-      nombre: nombre,
-      bloque: bloque,
-      fechaNacimiento: fechaNacimiento,
-      anioIngreso: anioIngreso,
-      categoria: categoriaCalculada,
-      direccion: direccion,
-      rol: getRoleTitle('admin'),
-      roleType: 'admin',
-      tallas: { polera: tallaPolera, chamarra: tallaChamarra, canguro: tallaCanguro },
-      pagos: [],
-      deuda: 0,
-      multasAcumuladas: 0,
-      ficha_medica: fichaMedica,
-      telefono: telefono,
-      contacto_emergencia: contactoEmergencia,
-      foto: fotoRegistroBase64,
-      horaEntrada: null,
-      horaSalida: null,
-      estadoAsistencia: 'Pendiente',
-      multaBob: 0
+      id:      supabaseId ? String(supabaseId) : ("SB-" + String(AppState.fraternos.length + 1).padStart(2, '0')),
+      ...registroLocal,
+      multasAcumuladas:   0,
+      horaEntrada:        null,
+      horaSalida:         null,
+      estadoAsistencia:   'Pendiente',
+      multaBob:           0
     };
 
     AppState.fraternos.push(nuevoAdmin);
@@ -499,32 +572,23 @@ function handleSelfRegistration(e) {
 
     closeRegisterModal();
     fotoRegistroBase64 = "";
+    if (btnSubmit) { btnSubmit.disabled = false; }
 
-    showToast('Administrador Registrado', `¡Bienvenido ${nombre}! Al ser el primer usuario registrado en la plataforma, se le asignó automáticamente el rol de Administrador con acceso total inmediato.`, 'success', 6000);
+    const origen = supabaseOk ? 'Supabase + local' : 'local (offline)';
+    showToast(
+      'Administrador Registrado',
+      `¡Bienvenido ${nombre}! Rol de Administrador asignado automáticamente. Guardado en: ${origen}.`,
+      'success', 6000
+    );
     setTimeout(() => { window.location.href = 'admin.html'; }, 900);
     return;
   }
 
-  // SI ES DANZANTE / FRATERNO: Pasa a lista de postulantes pendientes
+  // Danzante → postulante pendiente de aprobación
   const nuevoPostulante = {
-    id: "POST-" + Math.floor(1000 + Math.random() * 9000),
-    ci: ci,
-    nombre: nombre,
-    bloque: bloque,
-    fechaNacimiento: fechaNacimiento,
-    anioIngreso: anioIngreso,
-    categoria: categoriaCalculada,
-    direccion: direccion,
-    rol: "Danzante",
-    roleType: "danzante",
-    tallas: { polera: tallaPolera, chamarra: tallaChamarra, canguro: tallaCanguro },
-    pagos: [],
-    deuda: 0,
-    ficha_medica: fichaMedica,
-    telefono: telefono,
-    contacto_emergencia: contactoEmergencia,
-    foto: fotoRegistroBase64,
-    estado: "Pendiente de Aprobación"
+    id:     supabaseId ? String(supabaseId) : ("POST-" + Math.floor(1000 + Math.random() * 9000)),
+    estado: "Pendiente de Aprobación",
+    ...registroLocal
   };
 
   AppState.postulantes.push(nuevoPostulante);
@@ -532,10 +596,15 @@ function handleSelfRegistration(e) {
 
   closeRegisterModal();
   fotoRegistroBase64 = "";
+  if (btnSubmit) { btnSubmit.disabled = false; btnSubmit.innerHTML = '<i class="fa-solid fa-paper-plane"></i> Enviar Inscripción a Revisión'; }
 
-  showToast('Inscripción Enviada', `¡Gracias ${nombre}! Su solicitud fue enviada y será evaluada por el Administrador.`, 'success', 5000);
+  const origen = supabaseOk ? 'enviada a Supabase' : 'guardada localmente';
+  showToast(
+    'Inscripción Enviada',
+    `¡Gracias ${nombre}! Su solicitud fue ${origen} y será evaluada por el Administrador.`,
+    'success', 5000
+  );
 }
-
 // --------------------------------------------------------------------------
 // 5. EVALUACIÓN Y ADMISIONES EXCLUSIVAS DEL ADMINISTRADOR (admin.html)
 // --------------------------------------------------------------------------
