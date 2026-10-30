@@ -1,72 +1,38 @@
-/* ==========================================================================
+﻿/* ==========================================================================
    SAMBOS CAPORALES BLOQUE ILLIMANI - CORE APPLICATION LOGIC (app.js)
-   Página Principal con Login por CI + Autoregistro de Nuevos Fraternos con Foto
-   Módulo Exclusivo de Admisiones en Panel Admin (Aprobar / Rechazar)
+   P gina Principal con Login por CI + Autoregistro de Nuevos Fraternos con Foto
+   M dulo Exclusivo de Admisiones en Panel Admin (Aprobar / Rechazar)
    Cuentas Corrientes Separadas, QR & Reportes Financieros en CSV
    ========================================================================== */
-// --------------------------------------------------------------------------
-// CONFIGURACIÓN DE FIREBASE (Carga Asíncrona Opcional y Segura)
-// --------------------------------------------------------------------------
-const firebaseConfig = {
-  apiKey: "AIzaSyDoSpKwQTfQ_-VUdqoBuVSyyXYYFgubdMs",
-  authDomain: "://firebaseapp.com",
-  projectId: "sambosillimani",
-  storageBucket: "sambosillimani.firebasestorage.app",
-  messagingSenderId: "329077302554",
-  appId: "1:329077302554:web:f48f6e6051ad0d4f2638a3",
-  measurementId: "G-14NZVHZYKT"
-};
 
-let firebaseApp = null;
-let auth = null;
+// --------------------------------------------------------------------------
+// CONFIGURACIÓN DE SUPABASE
+// Lee las variables inyectadas por Vercel (NEXT_PUBLIC_*) o usa fallback.
+// --------------------------------------------------------------------------
+const SUPABASE_URL = "https://jfnjrgvxchoucepbjlcn.supabase.co";
+// IMPORTANTE: La anon key se lee desde la variable de entorno de Vercel (VITE_SUPABASE_ANON_KEY).
+// En desarrollo local, crea un archivo .env.local con: VITE_SUPABASE_ANON_KEY=<tu_anon_key>
+// La anon key se encuentra en: Supabase Dashboard → Project Settings → API → Project API Keys → anon public
+const SUPABASE_ANON_KEY = (typeof __SUPABASE_ANON_KEY__ !== "undefined" && __SUPABASE_ANON_KEY__)
+  || (window.__ENV__ && window.__ENV__.SUPABASE_ANON_KEY)
+  || "";  // ← Vercel inyecta esto automáticamente desde las Environment Variables del proyecto
 
-// Carga opcional y no bloqueante de Firebase para no interrumpir el flujo del sistema
-async function initFirebaseOptional() {
+let supabaseClient = null;
+
+// Inicialización asíncrona de Supabase (no bloqueante, no causa CORS)
+async function initSupabase() {
   try {
-    const { initializeApp } = await import("https://gstatic.com");
-    const { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged } = await import("https://gstatic.com");
-
-    firebaseApp = initializeApp(firebaseConfig);
-    auth = getAuth(firebaseApp);
-
-    window.registrarUsuario = function (email, password) {
-      if (!auth) return;
-      createUserWithEmailAndPassword(auth, email, password)
-        .then(() => {
-          showToast("Firebase Cloud", "¡Usuario sincronizado en la nube de Firebase!", "success");
-          setTimeout(() => { window.location.href = "admin.html"; }, 1500);
-        })
-        .catch((error) => console.warn("Firebase Auth Error:", error.message));
-    };
-
-    window.iniciarSesion = function (email, password) {
-      if (!auth) return;
-      signInWithEmailAndPassword(auth, email, password)
-        .then(() => {
-          console.log("Sesión sincronizada en Firebase Cloud");
-          window.location.href = "admin.html";
-        })
-        .catch((error) => console.warn("Firebase Auth Error:", error.message));
-    };
-
-    window.loginConCarnet = function (carnetIngresado) {
-      if (!carnetIngresado || !auth) return;
-      const emailVirtual = `${carnetIngresado.trim()}@sambos.com`;
-      const passwordVirtual = `${carnetIngresado.trim().substring(0, 4)}sambos`;
-      window.iniciarSesion(emailVirtual, passwordVirtual);
-    };
-
-    onAuthStateChanged(auth, (user) => {
-      if (user) {
-        console.log("Sesión activa en Firebase:", user.email);
-      }
-    });
+    const { createClient } = await import("https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm");
+    supabaseClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    window._supabase = supabaseClient;
+    console.info("Supabase conectado:", SUPABASE_URL);
   } catch (err) {
-    console.info("Modo local autónomo activo.");
+    console.info("Modo local autónomo activo (Supabase no disponible):", err.message);
   }
 }
 
-initFirebaseOptional();
+initSupabase();
+
 
 // 1. CONSTANTES Y CONFIGURACIÓN GENERAL
 // --------------------------------------------------------------------------
