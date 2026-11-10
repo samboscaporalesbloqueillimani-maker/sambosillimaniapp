@@ -6,28 +6,36 @@
    ========================================================================== */
 
 // --------------------------------------------------------------------------
-// CONFIGURACIÓN DE SUPABASE
-// Lee las variables inyectadas por Vercel (NEXT_PUBLIC_*) o usa fallback.
+// CONFIGURACIÓN DE SUPABASE CORREGIDA
 // --------------------------------------------------------------------------
-const SUPABASE_URL = "https://jfnjrgvxchoucepbjlcn.supabase.co/rest/v1/";
-// IMPORTANTE: La anon key se lee desde la variable de entorno de Vercel (VITE_SUPABASE_ANON_KEY).
-// En desarrollo local, crea un archivo .env.local con: VITE_SUPABASE_ANON_KEY=<tu_anon_key>
-// La anon key se encuentra en: Supabase Dashboard → Project Settings → API → Project API Keys → anon public
-const SUPABASE_ANON_KEY = (typeof __SUPABASE_ANON_KEY__ !== "undefined" && __SUPABASE_ANON_KEY__)
+// 1. Usamos la URL base correcta (sin /rest/v1/)
+const SUPABASE_URL = "https://jfnjrgvxchoucepbjlcn.supabase.co";
+
+// 2. Mapeamos de forma limpia lo que inyecta Vercel para frameworks como Next/Vite
+const SUPABASE_ANON_KEY = 
+     (typeof process !== "undefined" && process.env ? process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY : null)
+  || (typeof process !== "undefined" && process.env ? process.env.VITE_SUPABASE_ANON_KEY : null)
+  || (typeof __SUPABASE_ANON_KEY__ !== "undefined" && __SUPABASE_ANON_KEY__)
   || (window.__ENV__ && window.__ENV__.SUPABASE_ANON_KEY)
-  || "";  // ← Vercel inyecta esto automáticamente desde las Environment Variables del proyecto
+  || "sb_publishable_ds..."; // <-- SI TODO FALLA, PEGA AQUÍ TU LLAVE CORTA DIRECTAMENTE ENTRE COMILLAS
 
 let supabaseClient = null;
 
-// Inicialización asíncrona de Supabase (no bloqueante, no causa CORS)
+// Inicialización asíncrona de Supabase
 async function initSupabase() {
   try {
     const { createClient } = await import("https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm");
+    
+    // Validamos antes de inicializar para dar un error descriptivo si falta la llave
+    if (!SUPABASE_ANON_KEY) {
+      throw new Error("La llave ANON_KEY sigue llegando vacía al código del navegador.");
+    }
+
     supabaseClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
     window._supabase = supabaseClient;
-    console.info("Supabase conectado:", SUPABASE_URL);
+    console.info("Supabase conectado exitosamente en:", SUPABASE_URL);
   } catch (err) {
-    console.info("Modo local autónomo activo (Supabase no disponible):", err.message);
+    console.error("Modo local autónomo activo (Supabase no disponible):", err.message);
   }
 }
 
