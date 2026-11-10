@@ -9,7 +9,7 @@
 // CONFIGURACIÓN DE SUPABASE
 // Lee las variables inyectadas por Vercel (NEXT_PUBLIC_*) o usa fallback.
 // --------------------------------------------------------------------------
-const SUPABASE_URL = "https://jfnjrgvxchoucepbjlcn.supabase.co";
+const SUPABASE_URL = "https://jfnjrgvxchoucepbjlcn.supabase.co/rest/v1/";
 // IMPORTANTE: La anon key se lee desde la variable de entorno de Vercel (VITE_SUPABASE_ANON_KEY).
 // En desarrollo local, crea un archivo .env.local con: VITE_SUPABASE_ANON_KEY=<tu_anon_key>
 // La anon key se encuentra en: Supabase Dashboard → Project Settings → API → Project API Keys → anon public
