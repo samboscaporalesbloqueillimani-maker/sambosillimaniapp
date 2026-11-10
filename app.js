@@ -17,7 +17,7 @@ const SUPABASE_ANON_KEY =
   || (typeof process !== "undefined" && process.env ? process.env.VITE_SUPABASE_ANON_KEY : null)
   || (typeof __SUPABASE_ANON_KEY__ !== "undefined" && __SUPABASE_ANON_KEY__)
   || (window.__ENV__ && window.__ENV__.SUPABASE_ANON_KEY)
-  || "sb_publishable_ds..."; // <-- SI TODO FALLA, PEGA AQUÍ TU LLAVE CORTA DIRECTAMENTE ENTRE COMILLAS
+  || "sb_publishable_ds73hD4DP_GONmSbsnXkGQ_DSMXODK1"; // <-- SI TODO FALLA, PEGA AQUÍ TU LLAVE CORTA DIRECTAMENTE ENTRE COMILLAS
 
 let supabaseClient = null;
 
