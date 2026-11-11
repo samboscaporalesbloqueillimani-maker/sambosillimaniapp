@@ -2507,6 +2507,7 @@ if (formLogin) {
   formLogin.addEventListener("submit", (e) => {
     e.preventDefault();
     const carnetLogin = document.getElementById("loginCI")?.value.trim() || "";
-    window.loginConCarnet(carnetLogin);
+    //window.loginConCarnet(carnetLogin);
+    processLogin(carnetLogin);
   });
 }
