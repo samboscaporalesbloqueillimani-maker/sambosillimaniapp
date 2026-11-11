@@ -356,7 +356,7 @@ function playFolkloreFanfare() {
 function processLogin(ci, forceRole = null) {
   const fraternos = getFraternos();
   const user = fraternos.find(f => f.ci === ci);
-
+console.log("ci:"+ci);
   // Comprobar si está en lista de postulantes pendientes
   const postulanteIdx = AppState.postulantes.findIndex(p => p.ci === ci);
   if (postulanteIdx !== -1) {
